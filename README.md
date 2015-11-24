@@ -2,6 +2,10 @@
 
 ***effortlessly know*** when everyone in your team is ***available / busy***.
 
+[![Build Status](https://travis-ci.org/dwyl/team-calendar.svg)](https://travis-ci.org/dwyl/team-calendar)
+[![codecov.io](https://codecov.io/github/dwyl/team-calendar/coverage.svg?branch=master)](https://codecov.io/github/dwyl/team-calendar?branch=master)
+
+
 ## Why?
 
 Viewing your team's availability in a single view is
