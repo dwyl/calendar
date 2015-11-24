@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/dwyl/team-calendar.svg)](https://travis-ci.org/dwyl/team-calendar)
 [![codecov.io](https://codecov.io/github/dwyl/team-calendar/coverage.svg?branch=master)](https://codecov.io/github/dwyl/team-calendar?branch=master)
-
+[![Code Climate](https://codeclimate.com/github/dwyl/team-calendar/badges/gpa.svg)](https://codeclimate.com/github/dwyl/team-calendar)
 
 ## Why?
 
