@@ -19,6 +19,12 @@ var opts = {
   scope: scopes // profile
 };
 
+var google = require('googleapis');
+var OAuth2 = google.auth.OAuth2;
+var gcal = google.calendar('v3'); // http://git.io/vBGLn
+var oauth2Client = new OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, opts.REDIRECT_URL);
+
+
 var hapi_auth_google = require('hapi-auth-google');
 
 var plugins = [
@@ -51,7 +57,25 @@ server.register(plugins, function (err) {
     path: '/calendar',
     config: { auth : 'jwt' },
     handler: function(request, reply) {
-      reply('show calendar here...');
+      console.log('- - - - -> '+ request.auth.credentials.emails[0].value);
+      oauth2Client.setCredentials(request.auth.credentials.tokens);
+      var email = request.auth.credentials.emails[0].value;
+      gcal.events.list({ calendarId: email, auth: oauth2Client }, function(err, response) {
+        console.log(' - - - - - - - - - - - - - - - - - - calendar api err:');
+        console.log(err)
+        console.log(' - - - - - - - - - - - - - - - - - - calendar api response:');
+        console.log(response);
+        // handle err and response
+        reply('<pre><code>'+JSON.stringify(response, null, 2)+'</code></pre>');
+      });
+      // gcal.calendarList.list({ auth: oauth2Client }, function(err, response) {
+      //   console.log(' - - - - - - - - - - - - - - - - - - calendar api err:');
+      //   console.log(err)
+      //   console.log(' - - - - - - - - - - - - - - - - - - calendar api response:');
+      //   console.log(response);
+      //   // handle err and response
+      //   reply('<pre><code>'+JSON.stringify(response, null, 2)+'</code></pre>');
+      // });
     }
   }
 

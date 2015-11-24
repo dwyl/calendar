@@ -26,6 +26,7 @@
   "homepage": "https://github.com/nelsonic/team-calendar#readme",
   "dependencies": {
     "env2": "^2.0.4",
+    "googleapis": "^2.1.6",
     "hapi": "^11.1.2",
     "hapi-auth-google": "^1.0.6",
     "hapi-auth-jwt2": "^5.2.1",
