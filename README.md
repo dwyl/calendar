@@ -6,7 +6,7 @@
 [![codecov.io](https://codecov.io/github/dwyl/team-calendar/coverage.svg?branch=master)](https://codecov.io/github/dwyl/team-calendar?branch=master)
 [![Code Climate](https://codeclimate.com/github/dwyl/team-calendar/badges/gpa.svg)](https://codeclimate.com/github/dwyl/team-calendar)
 
-## Why?
+## Why?
 
 Viewing your team's availability in a single view is
 a time-consuming problem that all organizations face.
