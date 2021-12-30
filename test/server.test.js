@@ -48,7 +48,7 @@ test(file+'MOCK Google OAuth2 Flow /googleauth?code=mockcode', function(t) {
             .post('/o/oauth2/token')
             .reply(200, token_fixture);
 
-  // see: http://git.io/v4nTR for google plus api url
+  // see: https://git.io/v4nTR for google plus api url
   // https://www.googleapis.com/plus/v1/people/{userId}
   var sample_profile = fs.readFileSync('./test/fixtures/sample-profile.json');
   var nock = require('nock');

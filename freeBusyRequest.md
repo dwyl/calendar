@@ -36,7 +36,7 @@ Confusingly named this is where you add the calendars of people that you would l
 There's also the ability to search all the calendars of people in a group that they're part of like an organisation. We haven't tried this but it seems like each group has it's own ID and then you enter that instead of individual people's calendar ID's.
 
 Here's a slide share of how to find out a person's calendar ID given that they've shared their calendar with you:
-http://googleappstroubleshootinghelp.blogspot.co.uk/2012/09/how-to-find-calendar-id-of-google.html
+https://googleappstroubleshootinghelp.blogspot.co.uk/2012/09/how-to-find-calendar-id-of-google.html
 
 You basically just click on the drop down arrow by their name in your calendar list and go to settings.
 

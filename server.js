@@ -21,7 +21,7 @@ var opts = {
 
 var google = require('googleapis');
 var OAuth2 = google.auth.OAuth2;
-var gcal = google.calendar('v3'); // http://git.io/vBGLn
+var gcal = google.calendar('v3'); // https://git.io/vBGLn
 var oauth2Client = new OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, opts.REDIRECT_URL);
 
 
@@ -34,7 +34,7 @@ var plugins = [
 server.register(plugins, function (err) {
   // handle the error if the plugin failed to load:
   assert(!err, "FAILED TO LOAD PLUGIN!!! :-("); // fatal error
-	// see: http://hapijs.com/api#serverauthschemename-scheme
+	// see: https://hapijs.com/api#serverauthschemename-scheme
   server.auth.strategy('jwt', 'jwt', true,
   { key: process.env.JWT_SECRET,
     validateFunc: require('./lib/hapi_auth_jwt2_validate.js'),
