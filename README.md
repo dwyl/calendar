@@ -45,3 +45,7 @@ mix s
 Now visit 
 [`localhost:4000`](http://localhost:4000) 
 in your web browser.
+
+If you're curious on how to build this, 
+please check our 
+[`BUILDIT.md`](./BUILDIT.md) file.
