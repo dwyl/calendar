@@ -18,6 +18,9 @@ defmodule CalWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/app", AppController, :app
+
+    get "/auth/google/callback", GoogleAuthController, :index
   end
 
   # Other scopes may use custom stacks.
