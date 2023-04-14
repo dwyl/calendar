@@ -1,16 +1,19 @@
 {
   "skip_files": [
     "test/",
-    "lib/app.ex",
-    "lib/app/application.ex",
-    "lib/app_web.ex",
-    "lib/app/repo.ex",
-    "lib/app/release.ex",
-    "lib/app_web/views/app_view.ex",
-    "lib/app_web/views/init_view.ex",
-    "lib/app_web/views/layout_view.ex",
-    "lib/app_web/views/error_helpers.ex",
-    "lib/app_web/endpoint.ex",
-    "lib/app_web/telemetry.ex"
+    "lib/cal.ex",
+    "lib/cal/callication.ex",
+    "lib/cal_web.ex",
+    "lib/cal/repo.ex",
+    "lib/cal/release.ex",
+    "lib/cal_web/views/cal_view.ex",
+    "lib/cal_web/views/init_view.ex",
+    "lib/cal_web/views/layout_view.ex",
+    "lib/cal_web/views/error_helpers.ex",
+    "lib/cal_web/endpoint.ex",
+    "lib/cal_web/telemetry.ex",
+    "lib/cal_web/endpoint.ex",
+    "lib/cal_web/gettext.ex",
+    "lib/cal.ex"
   ]
 }
