@@ -9,7 +9,15 @@ defmodule Cal.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        c: :test,
+        coveralls: :test,
+        "coveralls.json": :test,
+        "coveralls.html": :test,
+        t: :test
+      ]
     ]
   end
 
@@ -46,7 +54,12 @@ defmodule Cal.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+
+      # create docs on localhost by running "mix docs"
+      {:ex_doc, "~> 0.29", only: :dev, runtime: false},
+      # Track test coverage: github.com/parroty/excoveralls
+      {:excoveralls, "~> 0.15", only: [:test, :dev]},
     ]
   end
 
@@ -64,7 +77,10 @@ defmodule Cal.MixProject do
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["tailwind default", "esbuild default"],
-      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"]
+      "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
+      t: ["test"],
+      c: ["coveralls.html"],
+      s: ["setup", "phx.server"]
     ]
   end
 end
