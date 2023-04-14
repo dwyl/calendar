@@ -91,11 +91,10 @@ and you should be able to have Google authentication working on the application.
 
 Here are the changes you should have:
 
-- created `GoogleAuthController` inside `lib/cal_web/controllers`
-and `AppController` as well.
-(`AppController` pertains to the application 
-the user will login into.
-It's located inside the `/app` URL).
+- created `GoogleAuthController` inside `lib/cal_web/controllers`.
+The 
+[`lib/cal_web/router.ex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/router.ex#L21-L23)
+file should look like so.
 
 ```elixir
   scope "/", CalWeb do
@@ -107,7 +106,10 @@ It's located inside the `/app` URL).
     get "/auth/google/callback", GoogleAuthController, :index
   end
 ```
-Your `GoogleAuthController` should look like so:
+
+Your `GoogleAuthController`
+inside [`lib/cal_web/controllers/google_auth_controller.ex` ](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/google_auth_controller.ex)
+should look like so:
 
 ```elixir
 defmodule CalWeb.GoogleAuthController do
@@ -132,9 +134,16 @@ that control the person information.
 We use `put_flash/2` to add this token 
 to later be used in the `/app` URL.
 
-- created `app_controller.ex` 
-and `app_html.ex` inside `lib/cal_web/controllers`
-and `app.html.heex` inside `lib/cal_web/controllers/app_html`.
+- created 
+[`app_controller.ex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/app_controller.ex)
+and [`app_html.ex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/app_html.ex) 
+inside `lib/cal_web/controllers`
+and 
+[`app.html.heex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/app_html/app.html.heex) 
+inside `lib/cal_web/controllers/app_html`
+(`AppController` pertains to the application 
+the user will login into.
+It's located inside the `/app` URL).
 These files pertain to the view and controllers
 of the **app** (located in `/app` URL) 
 where the user will see the calendar events.
@@ -182,7 +191,7 @@ to check if the flow of the app is correctly setup.
 ```
 
 - added the login button 
-inside `lib/cal_web/controllers/page_html/home.html.heex`.
+inside [`lib/cal_web/controllers/page_html/home.html.heex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/page_html/home.html.heex#L61-L64).
 
 ```html
 <p class="mt-4 text-base leading-7 text-zinc-600">
