@@ -1,10 +1,16 @@
-# team-calendar
+<div align="center">
+
+# `calendar`
 
 ***effortlessly know*** when everyone in your team is ***available / busy***.
 
-[![Build Status](https://travis-ci.org/dwyl/team-calendar.svg)](https://travis-ci.org/dwyl/team-calendar)
-[![codecov.io](https://codecov.io/github/dwyl/team-calendar/coverage.svg?branch=master)](https://codecov.io/github/dwyl/team-calendar?branch=master)
-[![Code Climate](https://codeclimate.com/github/dwyl/team-calendar/badges/gpa.svg)](https://codeclimate.com/github/dwyl/team-calendar)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/dwyl/calendar/ci.yml?label=build&style=flat-square&branch=main)
+[![codecov.io](https://img.shields.io/codecov/c/github/dwyl/calendar/main.svg?style=flat-square)](http://codecov.io/github/dwyl/calendar?branch=main)
+[![Hex.pm](https://img.shields.io/hexpm/v/elixir_auth_google?color=brightgreen&style=flat-square)](https://hex.pm/packages/elixir_auth_google)
+[![contributions welcome](https://img.shields.io/badge/feedback-welcome-brightgreen.svg?style=flat-square)](https://github.com/dwyl/calendar/issues)
+[![HitCount](https://hits.dwyl.com/dwyl/calendar.svg)](https://hits.dwyl.com/dwyl/calendar)
+
+</div>
 
 ## Why?
 
@@ -24,5 +30,18 @@ Team calendar sharing simplified.
 Using the Google Calendar API, get the availability of all members
 of a team and display them in a single intuitive view.
 
-> **Note**: *Ask* ***lots*** *of questions as issues in this repo
+> **Note**: Please *Ask* ***lots*** *of questions 
+> as issues in this repo
  so we can evolve the requirements/solution collectively.
+
+ ## Run the App
+
+```sh
+git clone git@github.com:dwyl/calendar.git
+cd calendar
+mix s
+```
+
+Now visit 
+[`localhost:4000`](http://localhost:4000) 
+in your web browser.
