@@ -28,6 +28,8 @@ so you can follow this tutorial more precisely.
 - [Build it 👩‍💻](#build-it-)
 - [0. Creating sample `Phoenix` project](#0-creating-sample-phoenix-project)
 - [1. Adding `Google Auth` and basic flow in our app](#1-adding-google-auth-and-basic-flow-in-our-app)
+- [2. Connecting to `Google Calendar API`](#2-connecting-to-google-calendar-api)
+  - [2.1 Adding scopes when requesting token](#21-adding-scopes-when-requesting-token)
 
 
 # 0. Creating sample `Phoenix` project
@@ -219,3 +221,149 @@ defmodule CalWeb.PageController do
   end
 end
 ```
+
+And that's it! 
+Those were the changes needed to get auth working
+with Google on our app!
+
+# 2. Connecting to `Google Calendar API`
+
+We are going to be using the `token`
+to make requests to 
+the [`Google Calendar API`](https://developers.google.com/calendar/api/guides/overview).
+
+> **Note**
+>
+> Don't worry.
+> For testing purposes, 
+> the `Calendar API` is *free*.
+> You can get rate limited if you exceed a certain quota
+> of requests though.
+> Please check https://developers.google.com/calendar/api/guides/quota
+> for more information.
+
+To use this API,
+we need to *enable it*.
+Visit https://console.cloud.google.com/
+to access the Google Console 
+and choose the project you've created
+when setting up `elixir-auth-google`.
+Search for `calendar api` in the search bar.
+
+<p align="center">
+  <img width="832" alt="calendar-1" src="https://user-images.githubusercontent.com/17494745/232466175-e00237ad-5c3d-43f8-b8e6-39b53146ffc0.png">
+</p>
+
+And enable it.
+
+<p align="center">
+  <img width="832" alt="calendar-2" src="https://user-images.githubusercontent.com/17494745/232466351-815b1b29-b92e-4a92-983c-76b074e5e981.png">
+</p>
+
+And you should be done!
+You have enabled the API for the project 😃.
+
+Now we need to add the **calendar scopes**
+the user has to consent to using this API.
+For this, click on the `OAuth consent screen` 
+on the sidebar,
+and click on `Edit App`.
+
+<p align="center">
+  <img width="832" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232469724-1b3ad3ca-ab40-4bb4-9514-cb8f90d01919.png">
+</p>
+
+Go to the `Scopes` section
+and click on `Add or Remove scopes`.
+We will need to add a handful of scopes.
+Please visit the list
+in https://developers.google.com/calendar/caldav/v2/auth
+and add them accordingly.
+
+
+<p align="center">
+  <img width="832" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232469938-f6b34be4-c287-4d3d-b4a1-1fc5e4243221.png">
+</p>
+
+> You can copy the following string
+> to add these scopes in one go.
+> `https://www.googleapis.com/auth/calendar,https://www.googleapis.com/auth/calendar.readonly,https://www.googleapis.com/auth/calendar.events,https://www.googleapis.com/auth/calendar.events.readonly,https://www.googleapis.com/auth/calendar.settings.readonly,https://www.googleapis.com/auth/calendar.addons.execute`.
+
+
+<p align="center">
+  <img width="832" alt="calendar-4" src="https://user-images.githubusercontent.com/17494745/232479519-9506fd85-6116-4610-866b-242ce59411ae.png">
+</p>
+
+## 2.1 Adding scopes when requesting token
+
+After saving all of these changes,
+we need to add the scopes to 
+the configuration of `elixir-auth-google`.
+We need to add these scopes to the package
+so we can request an *access token that is allowed to do the actions detailed by the scopes*.
+
+For this, follow the steps in https://github.com/dwyl/elixir-auth-google#optional-scopes.
+We need to add the same scopes we've detailed prior
+separated in commas.
+For this, following the guide we've just linked,
+we are going to add the following code to
+`config/config.exs`.
+
+```elixir
+# Google auth variables
+config :elixir_auth_google,
+  google_scope: "profile email https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.events.readonly https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.settings.readonly"
+```
+
+After adding these scopes
+and restarting the server by running `mix phx.server`,
+when you click the sign up button,
+you will prompted with the following screen.
+
+<p align="center">
+  <img width="332" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232548327-b962ca67-4020-4fc1-b5f7-bfe23bced3a1.png">
+</p>
+
+These new scopes we've added
+both to **Google Cloud Console** 
+and **authorization scopes**
+are sensitive scopes.
+Since the project in `Google Cloud Console` 
+is private,
+we need to add a test user so they can consent
+to allowing the project to see these scopes.
+In our case,
+we are just going to add our own e-mail so we can test it.
+*You don't need to do this if the project is made public*.
+
+If you visit https://console.cloud.google.com/,
+go to the project 
+and navigate to `OAuth consent screen`,
+you can click on `+ ADD USERS`
+and input your own e-mail.
+
+<p align="center">
+  <img width="832" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232549550-f31ca82f-7fd6-4a9d-846b-ef5aefb168cc.png">
+</p>
+
+If you return to the application 
+and try to sign in again,
+the screen will ask you to proceed.
+
+<p align="center">
+  <img width="832" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232550107-9bc0e160-fe34-46bd-80ab-7f77f81fa021.png">
+</p>
+
+And consent to the scopes we've define.
+Make sure to tick all the boxes 
+or else we won't be able to fetch information
+from the `Google Calendar API`.
+
+<p align="center">
+  <img width="332" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232550351-98a75394-534a-4b79-9b88-7a3373adc929.png">
+</p>
+
+After checking all the boxes 
+and pressing continue,
+we will now be able to use the `Google Calendar API`
+to fetch all the information we need!
