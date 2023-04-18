@@ -10,17 +10,19 @@ defmodule CalWeb.AppController do
 
         headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
 
-        # Get list of calendars
+        # Get primary calendar
         {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
         |> parse_body_response()
 
-
         # Get events of first calendar
-        {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers)
+        params = %{
+          maxResults: 20,
+          singleEvents: true,
+        }
+        {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
         |> parse_body_response()
 
         dbg(event_list)
-
 
         render(conn, :app, layout: false)
 
