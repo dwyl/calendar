@@ -30,6 +30,7 @@ so you can follow this tutorial more precisely.
 - [1. Adding `Google Auth` and basic flow in our app](#1-adding-google-auth-and-basic-flow-in-our-app)
 - [2. Connecting to `Google Calendar API`](#2-connecting-to-google-calendar-api)
   - [2.1 Adding scopes when requesting token](#21-adding-scopes-when-requesting-token)
+  - [2.2 Fetching information to test and maintaining token alive](#22-fetching-information-to-test-and-maintaining-token-alive)
 
 
 # 0. Creating sample `Phoenix` project
@@ -80,7 +81,7 @@ We're ready to go.
 
 # 1. Adding `Google Auth` and basic flow in our app
 
-Now let's go over adding a way for the user
+Now let's go over adding a way for the person
 to authenticate with `Google` in our app.
 
 Luckily, we've developed a package
@@ -144,11 +145,11 @@ and
 [`app.html.heex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/app_html/app.html.heex) 
 inside `lib/cal_web/controllers/app_html`
 (`AppController` pertains to the application 
-the user will login into.
+the person will login into.
 It's located inside the `/app` URL).
 These files pertain to the view and controllers
 of the **app** (located in `/app` URL) 
-where the user will see the calendar events.
+where the person will see the calendar events.
 
 Your `app_html.ex` file should look like:
 
@@ -264,7 +265,7 @@ And you should be done!
 You have enabled the API for the project 😃.
 
 Now we need to add the **calendar scopes**
-the user has to consent to using this API.
+the person has to consent to using this API.
 For this, click on the `OAuth consent screen` 
 on the sidebar,
 and click on `Edit App`.
@@ -330,7 +331,7 @@ and **authorization scopes**
 are sensitive scopes.
 Since the project in `Google Cloud Console` 
 is private,
-we need to add a test user so they can consent
+we need to add a "test user" so they can consent
 to allowing the project to see these scopes.
 In our case,
 we are just going to add our own e-mail so we can test it.
@@ -367,3 +368,125 @@ After checking all the boxes
 and pressing continue,
 we will now be able to use the `Google Calendar API`
 to fetch all the information we need!
+
+
+## 2.2 Fetching information to test and maintaining token alive
+
+Let's take a look at the resources we want to retrieve 
+from the `Calendar API` at
+https://developers.google.com/calendar/api/v3/reference.
+
+We have two important resources that we need to fetch:
+
+- [**`calendars`**](https://developers.google.com/calendar/api/v3/reference/calendars/get),
+pertaining to a calendar.
+A person can have multiple calendars.
+For now, let's keep it simple 
+and always fetch the **primary** calendar of the logged in person.
+- [**events**](https://developers.google.com/calendar/api/v3/reference/events),
+which refer to an event in the calendar.
+
+To test this, 
+we are going to use 
+[`HTTPoison`](https://github.com/edgurgel/httpoison)
+to make HTTP requests
+to the `Calendar API` endpoints.
+
+Add the following line to the dependencies section 
+in `mix.exs` 
+and run `mix deps.get`.
+
+```elixir
+      {:httpoison, "~> 2.0"},
+```
+
+Now go over the `lib/cal_web/controllers/app_controller.ex`
+and change the `app` function
+and add two more, 
+as shown below.
+
+```elixir
+  def app(conn, _params) do
+
+    # We fetch the access token to make the requests.
+    # If none is found, we redirect the user to the home page.
+    case get_token(conn) do
+      {:ok, token} ->
+
+        headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+
+        # Get list of calendars
+        {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+        |> parse_body_response()
+
+
+        # Get events of first calendar
+        {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers)
+        |> parse_body_response()
+
+        dbg(event_list)
+
+        render(conn, :app, layout: false)
+
+      _ ->
+        conn |> redirect(to: ~p"/")
+    end
+  end
+
+
+
+  defp get_token(conn) do
+    case get_flash(conn, :token) do
+      nil -> {:error, nil}
+      token -> {:ok, token}
+    end
+  end
+
+
+  defp parse_body_response({:error, err}), do: {:error, err}
+  defp parse_body_response({:ok, response}) do
+    body = Map.get(response, :body)
+    # make keys of map atoms for easier access in templates
+    if body == nil do
+      {:error, :no_body}
+    else
+      {:ok, str_key_map} = Jason.decode(body)
+      atom_key_map = for {key, val} <- str_key_map, into: %{}, do: {String.to_atom(key), val}
+      {:ok, atom_key_map}
+    end
+
+    # https://stackoverflow.com/questions/31990134
+  end
+```
+
+We've added `get_token/1` to fetch the token 
+that is passed from the `conn`.
+We've separated this into a different function 
+because in the future, 
+we may have a way to maintain the token 
+in-between page refreshes.
+
+We've also added `parse_body_response/1`
+to parse the response body from the endpoints
+and make it readable and usable.
+
+Additionally, 
+in `app/1`
+if no token is found,
+we redirect the person to the homepage.
+We are retrieving the *primary calendar*
+and *the list of the events of the primary calendar*
+from the URL endpoints.
+
+If you restart the server
+and log in,
+the terminal will print the list of events.
+You should see an array of `event` resources
+with the structure detailed in 
+https://developers.google.com/calendar/api/v3/reference/events#resource-representations.
+
+Great stuff! 🎉
+
+We can now *use* this information
+and show it to the user! 
+

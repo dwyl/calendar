@@ -59,6 +59,12 @@ defmodule Cal.MixProject do
       # Google auth
       {:elixir_auth_google, "~> 1.6.5"},
 
+      # HTTPoison
+      {:httpoison, "~> 2.0"},
+
+      # Storage
+      {:pockets, "~> 0.1.0"},
+
       # create docs on localhost by running "mix docs"
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       # Track test coverage: github.com/parroty/excoveralls
