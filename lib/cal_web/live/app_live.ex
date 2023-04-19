@@ -1,11 +1,11 @@
-defmodule CalWeb.AppController do
-  use CalWeb, :controller
+defmodule CalWeb.AppLive do
+  use CalWeb, :live_view
 
-  def app(conn, _params) do
+  def mount(_params, _session, socket) do
 
     # We fetch the access token to make the requests.
     # If none is found, we redirect the user to the home page.
-    case get_token(conn) do
+    case get_token(socket) do
       {:ok, token} ->
 
         headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
@@ -16,7 +16,7 @@ defmodule CalWeb.AppController do
 
         # Get events of first calendar
         params = %{
-          maxResults: 20,
+          maxResults: 10,
           singleEvents: true,
         }
         {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
@@ -24,17 +24,16 @@ defmodule CalWeb.AppController do
 
         dbg(event_list)
 
-        render(conn, :app, layout: false)
+        {:ok, assign(socket, event_list: event_list.items)}
 
       _ ->
-        conn |> redirect(to: ~p"/")
+        {:ok, push_redirect(socket, to: ~p"/")}
     end
   end
 
 
-
-  defp get_token(conn) do
-    case get_flash(conn, :token) do
+  defp get_token(socket) do
+    case Phoenix.Controller.get_flash(socket, :token) do
       nil -> {:error, nil}
       token -> {:ok, token}
     end
@@ -56,25 +55,4 @@ defmodule CalWeb.AppController do
     # https://stackoverflow.com/questions/31990134
   end
 
-    # person_email = get_flash(conn, :person_email)
-
-    ## Tries to fetch the token from the DETS.
-    #user_token = TokenTable.fetch_user_token(person_email)
-    #if (is_nil(user_token)) do
-
-    #  flash_token = get_flash(conn, :token)
-
-    #  # If the token is in the flash assigns, we add it to the DETS table
-    #  # and return the token
-    #  if(is_nil(flash_token)) do
-    #    {:error, nil}
-    #  else
-    #    TokenTable.create_or_update_user_token(%{person_email: person_email, token: flash_token})
-    #    {:ok, flash_token}
-    #  end
-
-    #else
-    #  {:ok, user_token.token}
-    #end
-  #end
 end

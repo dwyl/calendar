@@ -18,7 +18,7 @@ defmodule CalWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    get "/app", AppController, :app
+    live "/app", AppLive
 
     get "/auth/google/callback", GoogleAuthController, :index
   end
