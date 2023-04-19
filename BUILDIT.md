@@ -31,6 +31,9 @@ so you can follow this tutorial more precisely.
 - [2. Connecting to `Google Calendar API`](#2-connecting-to-google-calendar-api)
   - [2.1 Adding scopes when requesting token](#21-adding-scopes-when-requesting-token)
   - [2.2 Fetching information to test and maintaining token alive](#22-fetching-information-to-test-and-maintaining-token-alive)
+- [3. Converting our `app` page to a **LiveView**](#3-converting-our-app-page-to-a-liveview)
+  - [3.1 Deleting unused files](#31-deleting-unused-files)
+- [4. Show the list of events from `Google Calendar API`](#4-show-the-list-of-events-from-google-calendar-api)
 
 
 # 0. Creating sample `Phoenix` project
@@ -492,3 +495,169 @@ Great stuff! 🎉
 We can now *use* this information
 and show it to the user! 
 
+
+# 3. Converting our `app` page to a **LiveView**
+
+To make our page interactive 
+and have real-time capabilities
+(meaning it works on anyone that is connected to the channel),
+we will be converting our `/app` view and controller
+to use `LiveView`.
+
+> **Note**
+>
+> If you are not familiar with `LiveView`,
+> we recommend you check 
+> [`dwyl/phoenix-liveview-chat-example`](https://github.com/dwyl/phoenix-liveview-chat-example)
+> to learn more about it.
+> We recommend going through this guide 
+> because we are not going to focus on every detail
+> during this "conversion".
+
+For this, 
+we will create a folder called `live`
+inside `lib/cal_web`.
+Create a file called `app_live.ex`
+(the path will be `lib/call_web/live/app_live.ex`)
+and paste the following code:
+
+```elixir
+defmodule CalWeb.AppLive do
+  use CalWeb, :live_view
+
+  def mount(_params, _session, socket) do
+
+    # We fetch the access token to make the requests.
+    # If none is found, we redirect the user to the home page.
+    case get_token(socket) do
+      {:ok, token} ->
+
+        headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+
+        # Get primary calendar
+        {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+        |> parse_body_response()
+
+        # Get events of first calendar
+        params = %{
+          maxResults: 10,
+          singleEvents: true,
+        }
+        {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+        |> parse_body_response()
+
+        dbg(event_list)
+
+        {:ok, assign(socket, event_list: event_list.items)}
+
+      _ ->
+        {:ok, push_redirect(socket, to: ~p"/")}
+    end
+  end
+
+
+  defp get_token(socket) do
+    case Phoenix.Controller.get_flash(socket, :token) do
+      nil -> {:error, nil}
+      token -> {:ok, token}
+    end
+  end
+
+
+  defp parse_body_response({:error, err}), do: {:error, err}
+  defp parse_body_response({:ok, response}) do
+    body = Map.get(response, :body)
+    # make keys of map atoms for easier access in templates
+    if body == nil do
+      {:error, :no_body}
+    else
+      {:ok, str_key_map} = Jason.decode(body)
+      atom_key_map = for {key, val} <- str_key_map, into: %{}, do: {String.to_atom(key), val}
+      {:ok, atom_key_map}
+    end
+
+    # https://stackoverflow.com/questions/31990134
+  end
+
+end
+```
+
+As you can see,
+it's **extremely** similar to 
+the code present in `lib/cal_web/controllers/app_controller.ex`.
+This is intentional
+since `lib/call_web/live/app_live.ex` will act
+as a controller to the LiveView.
+The only difference is that 
+we define the `mount/3` function
+and assign the list of events fetched from the `Google Calendar API`
+to the LiveView socket.
+
+> We are only fetching 10 results just to keep bandwith
+> to a minimum while we are developing and testing our app.
+> We are doing this by setting the *query param* `maxResults` to 10.
+> You can check the available *query params*
+> at https://developers.google.com/calendar/api/v3/reference/events/list.
+
+Inside `lib/call_web/live/`,
+create another file called `app_live.html.heex`.
+This will be the rendered view of the LiveView.
+For now, just add the same code present in 
+`lib/cal_web/controllers/app_html/app.html.heex`.
+
+```html
+<div>
+    app
+</div>
+```
+
+Our `LiveView` is using the **`layout`** present in 
+`lib/cal_web/components/layouts/app.html.heex`.
+This means the contents in `lib/cal_web/controllers/app_html/app.html.heex`
+is being *rendered* inside the `<%= @inner_content %>` present in the layout.
+The layout is rendering a header.
+We don't care about the header,
+so let's simplify the layout to just render the content of our LiveView.
+
+Open `lib/cal_web/components/layouts/app.html.heex`
+and change it so it looks like so.
+
+```html
+<.flash_group flash={@flash} />
+<%= @inner_content %>
+```
+
+We're super close!
+The last thing we need to do is 
+change the `lib/cal_web/router.ex` file
+so the `/app` endpoint 
+is served by our newly created LiveView!
+
+Open `lib/cal_web/router.ex`
+and change the `get "/app", AppController, :app` line to:
+
+```elixir
+live "/app", AppLive
+```
+
+And that's it! 🎉
+
+
+## 3.1 Deleting unused files
+
+We can now delete the old controller and views,
+since they're no longer being used.
+You can now safely delete the following files:
+
+- `lib/cal_web/controllers/app_html/app.html.heex`
+- `lib/cal_web/controllers/app_controller.ex`
+- `lib/cal_web/controllers/app_html.ex`
+
+You may check all the changes needed in 
+[`527105f`](https://github.com/dwyl/calendar/pull/25/commits/527105ffb1b6ea25b70f4453f9e8175d1d3c5d22).
+
+
+# 4. Show the list of events from `Google Calendar API`
+
+Now that we have the event list from the `Google Calendar API`,
+let's show it to the user!
