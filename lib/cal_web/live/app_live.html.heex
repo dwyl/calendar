@@ -1,3 +1,42 @@
-<div>
-    app
+<div class="w-full p-4">
+  <main role="main" class="flex w-full flex-col content-center justify-center md:flex-row">
+    <!-- List of events -->
+
+    <div class="flex flex-auto flex-col">
+
+        <%= for event <- @event_list do %>
+            <div class="relative block h-fit w-full overflow-hidden rounded-lg border border-gray-100 mt-2">
+                <div class="flex flex-row">
+                <div class="flex w-14 flex-col items-center justify-center bg-red-700 py-2 pl-3 pr-3 text-white">
+                    <h3 class="text-xs"><%= render_date(event).month %></h3>
+                    <h3 class="text-2xl font-bold"><%= render_date(event).day %></h3>
+                    <h3 class="text-xs"><%= render_date(event).year %></h3>
+                </div>
+
+                <div class="ml-5 pb-2 pr-2 pt-2">
+                    <div class="sm:flex sm:justify-between sm:gap-4">
+                    <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
+                        <span class="mr-3"><%= Map.get(event, "summary") %></span>
+                        <span class="rounded-full border border-indigo-500 px-3 py-1 text-xs text-indigo-500">
+                        <span class="font-bold"><%= render_start_end_times(event) %></span>
+                        </span>
+                    </h3>
+                    </div>
+
+                    <div class="mt-1">
+                    <p class="w-full text-sm text-gray-500">
+                        <span>Organized by: </span>
+                        <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") %></span>
+                    </p>
+                    </div>
+                </div>
+                </div>
+            </div>
+        <% end %>
+    </div>
+
+    <div class="flex flex-auto">
+
+    </div>
+  </main>
 </div>

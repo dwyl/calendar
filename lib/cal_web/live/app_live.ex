@@ -1,5 +1,6 @@
 defmodule CalWeb.AppLive do
   use CalWeb, :live_view
+  import CalWeb.AppHTML
 
   def mount(_params, _session, socket) do
 
@@ -16,13 +17,13 @@ defmodule CalWeb.AppLive do
 
         # Get events of first calendar
         params = %{
-          maxResults: 10,
+          maxResults: 25,
           singleEvents: true,
         }
         {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
         |> parse_body_response()
 
-        dbg(event_list)
+        #dbg(event_list)
 
         {:ok, assign(socket, event_list: event_list.items)}
 

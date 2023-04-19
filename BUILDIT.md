@@ -661,3 +661,180 @@ You may check all the changes needed in
 
 Now that we have the event list from the `Google Calendar API`,
 let's show it to the user!
+By looking at the 
+[`Event` resource from the `Calendar API`](https://developers.google.com/calendar/api/v3/reference/events#resource),
+we will want the following to be shown to the user:
+
+- the `start` date/datetime.
+- the `end` date/datetime.
+- the `organizer`.
+- the `summary` (title) of the event.
+
+To make parsing and formatting
+dates and datetimes easier,
+we will be using 
+[`timex`](https://hexdocs.pm/timex/getting-started.html)
+to make this much easier.
+
+Open `mix.exs` and add the following line
+to the `deps` section and run `mix deps.get`.
+
+```elixir
+{:timex, "~> 3.0"},
+```
+
+We are now going to create a file in `lib/cal_web/live`
+called `app_live_html.ex`.
+This file will have a few functions
+that will make it easier to render some of the text 
+in our event item.
+
+```elixir
+defmodule CalWeb.AppHTML do
+  use CalWeb, :html
+
+  def render_start_end_times(event) do
+
+    # Converting both start and end datetimes.
+    # If no datetime is found, it's because the "start" is a date,
+    # meaning the event is an "all-day" event.
+    #
+    # See https://developers.google.com/calendar/api/v3/reference/events#resource.
+
+    {start_type, start_datetime} = case Map.get(event, "start") |> Map.get("dateTime") do
+      nil ->
+        {:ok, date} = Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+        {:date, date}
+      start_datetime ->
+        {:ok, datetime} = start_datetime |> Timex.parse("{RFC3339}")
+        {:datetime, datetime}
+    end
+
+    {end_type, end_datetime} = case Map.get(event, "end") |> Map.get("dateTime") do
+      nil ->
+        {:ok, date} = Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+        {:date, date}
+        end_datetime ->
+        {:ok, datetime} = end_datetime |> Timex.parse("{RFC3339}")
+        {:datetime, datetime}
+    end
+
+    # Return the string appropriately
+    if(start_type == :date) do
+      "All day"
+    else
+      {:ok, start_time} = Timex.format(start_datetime, "%H:%M", :strftime)
+      {:ok, end_time} = Timex.format(end_datetime, "%H:%M", :strftime)
+
+      "#{start_time} to #{end_time}"
+    end
+  end
+
+
+  def render_date(event) do
+    {:ok, start_datetime} = case Map.get(event, "start") |> Map.get("dateTime") do
+      nil -> Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+      start_datetime -> start_datetime |> Timex.parse("{RFC3339}")
+    end
+
+    %{
+      year: start_datetime.year,
+      month: Timex.month_shortname(start_datetime.month),
+      day: start_datetime.day
+    }
+  end
+end
+```
+
+We've created two functions:
+
+- **`render_start_end_times/1`** shows the text with the 
+start time and end time.
+Some events span *all-day* and don't have a specific *start datetime*.
+They do, however, have a *date*. 
+This is why we check for both 
+and return the string to be rendered to the view accordingly.
+- **`render_date`** returns an object
+with the day (number), month (3-character short word)
+and year (number)
+to be displayed in the item.
+
+Now it's time to change `lib/cal_web/live/app_live.html.heex`!
+Change it to the following.
+
+```html
+<div class="w-full p-4">
+  <main role="main" class="flex w-full flex-col content-center justify-center md:flex-row">
+    <!-- List of events -->
+
+    <div class="flex flex-auto flex-col">
+
+        <%= for event <- @event_list do %>
+            <div class="relative block h-fit w-full overflow-hidden rounded-lg border border-gray-100 mt-2">
+                <div class="flex flex-row">
+                <div class="flex w-14 flex-col items-center justify-center bg-red-700 py-2 pl-3 pr-3 text-white">
+                    <h3 class="text-xs"><%= render_date(event).month %></h3>
+                    <h3 class="text-2xl font-bold"><%= render_date(event).day %></h3>
+                    <h3 class="text-xs"><%= render_date(event).year %></h3>
+                </div>
+
+                <div class="ml-5 pb-2 pr-2 pt-2">
+                    <div class="sm:flex sm:justify-between sm:gap-4">
+                    <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
+                        <span class="mr-3"><%= Map.get(event, "summary") %></span>
+                        <span class="rounded-full border border-indigo-500 px-3 py-1 text-xs text-indigo-500">
+                        <span class="font-bold"><%= render_start_end_times(event) %></span>
+                        </span>
+                    </h3>
+                    </div>
+
+                    <div class="mt-1">
+                    <p class="w-full text-sm text-gray-500">
+                        <span>Organized by: </span>
+                        <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") %></span>
+                    </p>
+                    </div>
+                </div>
+                </div>
+            </div>
+        <% end %>
+    </div>
+
+    <div class="flex flex-auto">
+
+    </div>
+  </main>
+</div>
+```
+
+You will need to add the following line to the top of 
+`lib/cal_web/live/app_live.ex`
+so these functions are accessible from the template
+and actually *work*.
+
+```elixir
+import CalWeb.AppHTML
+```
+
+In the view template we are iterating over the 
+`@event_list` socket assign 
+and render the event item,
+making use of the functions we've defined above.
+
+If you run `mix phx.server` and sign in,
+you will see the following in your screen.
+
+<p align="center">
+  <img width="1032" alt="list_items1" src="https://user-images.githubusercontent.com/17494745/233153988-2f806df0-87ae-4e33-9041-75c92a731d44.png">
+</p>
+
+> **Note**
+>
+> Your results may vary depending on your calendar events.
+> For privacy reasons, 
+> some of these item's information was changed.
+
+Looking good!
+We are now successfully fetching the events
+and showing it to the user! 🥳
+

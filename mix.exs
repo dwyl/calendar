@@ -62,6 +62,9 @@ defmodule Cal.MixProject do
       # HTTPoison
       {:httpoison, "~> 2.0"},
 
+      # Datetime library
+      {:timex, "~> 3.0"},
+
       # Storage
       {:pockets, "~> 0.1.0"},
 
