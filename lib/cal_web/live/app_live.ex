@@ -23,7 +23,6 @@ defmodule CalWeb.AppLive do
         {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
         |> parse_body_response()
 
-        #dbg(event_list)
 
         {:ok, assign(socket, event_list: event_list.items)}
 

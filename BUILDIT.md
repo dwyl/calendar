@@ -37,6 +37,7 @@ so you can follow this tutorial more precisely.
 - [5. Adding calendar](#5-adding-calendar)
   - [5.1 Install `Alpine.js`](#51-install-alpinejs)
   - [5.2 Importing the calendar code](#52-importing-the-calendar-code)
+  - [5.3 Retrieving the event lists by day](#53-retrieving-the-event-lists-by-day)
 
 
 # 0. Creating sample `Phoenix` project
@@ -803,6 +804,7 @@ Change it to the following.
         <% end %>
     </div>
 
+    <!--  Calendar and form section -->
     <div class="flex flex-auto">
 
     </div>
@@ -901,4 +903,216 @@ As previously mentioned,
 we are using the calendar code 
 from https://tailwindcomponents.com/component/calendar-ui-with-tailwindcss-and-alpinejs
 (albeit with a few differences).
+
+Let's do this.
+Open `lib/cal_web/live/app_live.html.heex`
+and locate the `<div>`
+below the `<!--  Calendar and form section -->` line.
+Change it to the following:
+
+```html
+    <div class="flex md:w-1/2 justify-center px-4 py-2">
+
+            <div x-data="app()" x-init="[initDate(), getNoOfDays()]">
+
+                <!-- Calendar -->
+                <div class="container">
+
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+
+                        <div class="flex items-center justify-between py-2 px-6">
+                            <div>
+                                <span x-text="MONTH_NAMES[month]" class="text-lg font-bold text-gray-800"></span>
+                                <span x-text="year" class="ml-1 text-lg text-gray-600 font-normal"></span>
+                            </div>
+                            <div class="border rounded-lg px-1" style="padding-top: 2px;">
+                                <button
+                                    type="button"
+                                    class="leading-none rounded-lg transition ease-in-out duration-100 inline-flex cursor-pointer hover:bg-gray-200 p-1 items-center"
+                                    x-bind:class="{'cursor-not-allowed opacity-25': month == 0 }"
+                                    x-bind:disabled="month == 0 ? true : false"
+                                    @click="month--; getNoOfDays()">
+                                    <svg class="h-6 w-6 text-gray-500 inline-flex leading-none"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div class="border-r inline-flex h-6"></div>
+                                <button
+                                    type="button"
+                                    class="leading-none rounded-lg transition ease-in-out duration-100 inline-flex items-center cursor-pointer hover:bg-gray-200 p-1"
+                                    x-bind:class="{'cursor-not-allowed opacity-25': month == 11 }"
+                                    x-bind:disabled="month == 11 ? true : false"
+                                    @click="month++; getNoOfDays()">
+                                    <svg class="h-6 w-6 text-gray-500 inline-flex leading-none"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="-mx-1 -mb-1">
+                            <div class="flex flex-wrap">
+                                <template x-for="(day, index) in DAYS" x-bind:key="index">
+                                    <div style="width: 14.26%" class="px-2 py-2">
+                                        <div
+                                            x-text="day"
+                                            class="text-gray-600 text-sm uppercase tracking-wide font-bold text-center"></div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="flex flex-wrap border-t border-l">
+                                <template x-for="blankday in blankdays">
+                                    <div
+                                        style="width: 14.28%; height: 60px"
+                                        class="text-center border-r border-b px-4 pt-2"
+                                    ></div>
+                                </template>
+                                <template x-for="(date, dateIndex) in no_of_days" x-bind:key="dateIndex">
+                                    <div style="width: 14.28%; height:60px" class="px-4 pt-2 border-r border-b relative">
+                                        <div
+                                            @click="onClickCalendarDay(date)"
+                                            x-text="date"
+                                            class="inline-flex w-6 h-6 items-center justify-center cursor-pointer text-center leading-none rounded-full transition ease-in-out duration-100"
+                                            x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"
+                                        ></div>
+                                        <div style="height: 80px;" class="overflow-y-auto mt-1">
+
+                                            <template x-for="event in events.filter(e => new Date(e.event_date).toDateString() ===  new Date(year, month, date).toDateString() )">
+                                                <div
+                                                    class="px-2 py-1 rounded-lg mt-1 overflow-hidden border"
+                                                    x-bind:class="{
+                                                        'border-blue-200 text-blue-800 bg-blue-100': event.event_theme === 'blue',
+                                                        'border-red-200 text-red-800 bg-red-100': event.event_theme === 'red',
+                                                        'border-yellow-200 text-yellow-800 bg-yellow-100': event.event_theme === 'yellow',
+                                                        'border-green-200 text-green-800 bg-green-100': event.event_theme === 'green',
+                                                        'border-purple-200 text-purple-800 bg-purple-100': event.event_theme === 'purple'
+                                                    }"
+                                                >
+                                                    <p x-text="event.event_title" class="text-sm truncate leading-tight"></p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container mt-2">
+                    <div class="shadow w-full rounded-lg bg-white overflow-hidden w-full block p-8">
+
+                        <h2 class="font-bold text-2xl mb-6 text-gray-800 border-b pb-2">Add Event Details</h2>
+
+                        <div class="mb-4">
+                            <label class="text-gray-800 block mb-1 font-bold text-sm tracking-wide">Event title</label>
+                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" x-model="event_title">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="text-gray-800 block mb-1 font-bold text-sm tracking-wide">Event date</label>
+                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" x-model="event_date" readonly>
+                        </div>
+
+                        <div class="mt-8 text-right">
+                            <button type="button" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 border border-gray-700 rounded-lg shadow-sm" @click="addEvent()">
+                                Save Event
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                function app() {
+                    return {
+                        month: '',
+                        year: '',
+                        no_of_days: [],
+                        blankdays: [],
+                        days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+
+                        events: [],
+
+                        event_title: '',
+                        event_date: '',
+
+                        initDate() {
+                            let today = new Date();
+                            this.month = today.getMonth();
+                            this.year = today.getFullYear();
+                            this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
+                        },
+
+                        isToday(date) {
+                            const today = new Date();
+                            const d = new Date(this.year, this.month, date);
+
+                            return today.toDateString() === d.toDateString() ? true : false;
+                        },
+
+                        onClickCalendarDay(date) {
+                            this.event_date = new Date(this.year, this.month, date).toDateString();
+                        },
+
+                        clearModalFormData() {
+                            this.event_title = ''
+                            this.event_date = ''
+                        },
+
+                        addEvent() {
+                            if (this.event_title == '') {
+                                return;
+                            }
+
+                            // clear the form data
+                            this.clearModalFormData()
+                        },
+
+                        getNoOfDays() {
+                            let daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
+
+                            // find where to start calendar day of week
+                            let dayOfWeek = new Date(this.year, this.month).getDay();
+                            let blankdaysArray = [];
+                            for ( var i=1; i <= dayOfWeek; i++) {
+                                blankdaysArray.push(i);
+                            }
+
+                            let daysArray = [];
+                            for ( var i=1; i <= daysInMonth; i++) {
+                                daysArray.push(i);
+                            }
+
+                            this.blankdays = blankdaysArray;
+                            this.no_of_days = daysArray;
+                        }
+                    }
+                }
+            </script>
+
+    </div>
+```
+
+This should add the calendar to the page.
+If you sign in, the `/app` page
+should look like so.
+
+<p align="center">
+  <img width="700" alt="with_calendar1" src="https://user-images.githubusercontent.com/17494745/233433201-93a7067d-9849-4d07-85f3-bec54a7e935a.png">
+</p>
+
+We've changed the code from the original link.
+The original code contained *modals*
+and we've placed the form below the calendar
+and changed how `Alpine.js` was used with the calendar.
+The reason we did this is because 
+**modals are often anti-pattern and not used appropriately**.
+If you want to know more about *why*,
+please check https://github.com/dwyl/product-ux-research/issues/38.
+
 
