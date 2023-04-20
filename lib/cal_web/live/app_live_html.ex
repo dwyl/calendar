@@ -21,7 +21,7 @@ defmodule CalWeb.AppHTML do
         {:datetime, datetime}
     end
 
-    {end_type, end_datetime} = case Map.get(event, "end") |> Map.get("dateTime") do
+    {_end_type, end_datetime} = case Map.get(event, "end") |> Map.get("dateTime") do
       nil ->
         {:ok, date} = Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
         {:date, date}

@@ -34,6 +34,9 @@ so you can follow this tutorial more precisely.
 - [3. Converting our `app` page to a **LiveView**](#3-converting-our-app-page-to-a-liveview)
   - [3.1 Deleting unused files](#31-deleting-unused-files)
 - [4. Show the list of events from `Google Calendar API`](#4-show-the-list-of-events-from-google-calendar-api)
+- [5. Adding calendar](#5-adding-calendar)
+  - [5.1 Install `Alpine.js`](#51-install-alpinejs)
+  - [5.2 Importing the calendar code](#52-importing-the-calendar-code)
 
 
 # 0. Creating sample `Phoenix` project
@@ -837,4 +840,65 @@ you will see the following in your screen.
 Looking good!
 We are now successfully fetching the events
 and showing it to the user! 🥳
+
+
+# 5. Adding calendar 
+
+Now let's add a calendar for the user to have a way 
+of selecting a date and filtering their events list
+according to the chosen date.
+
+To save time, 
+we are going to use a combination of `TailwindCSS` and `AlpineJS`
+to add our calendar to the page.
+
+We are going to be using
+the code from
+https://tailwindcomponents.com/component/calendar-ui-with-tailwindcss-and-alpinejs.
+
+## 5.1 Install `Alpine.js`
+
+For this, 
+we need to install [`AlpineJS`](https://alpinejs.dev/essentials/installation).
+For this, locate the file
+`lib/cal_web/components/layouts/root.html.heex`
+and add the following line to the `<head>` tags.
+
+```html
+    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.js" defer></script>
+
+```
+
+Additionally, 
+we need to change how the socket is instantiated 
+in `assets/js/app.js` so `Alpine.js` correctly
+changes the DOM
+(check https://hexdocs.pm/phoenix_live_view/js-interop.html for more information).
+For this, locate the `assets/js/app.js` file
+and change the `let livesocket` variable instantiation 
+to look like so:
+
+```js
+let liveSocket = new LiveSocket("/live", Socket, {
+    dom: {
+        onBeforeElUpdated(from, to) {
+          if (from._x_dataStack) {
+            window.Alpine.clone(from, to)
+          }
+        }
+    },
+    params: {_csrf_token: csrfToken}
+})
+```
+
+That's it for installing `Alpine.js`!
+Now let's import the code!
+
+
+## 5.2 Importing the calendar code
+
+As previously mentioned, 
+we are using the calendar code 
+from https://tailwindcomponents.com/component/calendar-ui-with-tailwindcss-and-alpinejs
+(albeit with a few differences).
 
