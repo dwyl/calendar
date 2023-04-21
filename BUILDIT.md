@@ -1232,44 +1232,44 @@ We are going to make some changes to the
 the `<script>` tag.
 
 ```js
-            function app() {
-                return {
-                    month: '',
-                    year: '',
-                    chosen_day: '',
-                    no_of_days: [],
-                    blankdays: [],
-                    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  function app() {
+      return {
+          month: '',
+          year: '',
+          chosen_day: '',
+          no_of_days: [],
+          blankdays: [],
+          days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 
-                    events: [],
+          events: [],
 
-                    event_title: '',
-                    event_date: '',
+          event_title: '',
+          event_date: '',
 
-                    initDate() {
-                        let today = new Date();
-                        this.chosen_day = today.getUTCDate();
-                        this.month = today.getMonth();
-                        this.year = today.getFullYear();
-                        this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
-                    },
+          initDate() {
+              let today = new Date();
+              this.chosen_day = today.getUTCDate();
+              this.month = today.getMonth();
+              this.year = today.getFullYear();
+              this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
+          },
 
-                    isToday(day) {
+          isToday(day) {
 
-                        const chosen_date = new Date(this.year, this.month, this.chosen_day);
-                        const d = new Date(this.year, this.month, day);
+              const chosen_date = new Date(this.year, this.month, this.chosen_day);
+              const d = new Date(this.year, this.month, day);
 
-                        return chosen_date.toDateString() === d.toDateString() ? true : false;
-                    },
+              return chosen_date.toDateString() === d.toDateString() ? true : false;
+          },
 
-                    onClickCalendarDay(day) {
-                        this.event_date = new Date(this.year, this.month, day).toDateString();
-                        this.chosen_day = day;
-                        window.dateClickHook.changeDate(this.year, this.month + 1, day);
-                    },
-                ....
-                }
-            }
+          onClickCalendarDay(day) {
+              this.event_date = new Date(this.year, this.month, day).toDateString();
+              this.chosen_day = day;
+              window.dateClickHook.changeDate(this.year, this.month + 1, day);
+          },
+      ....
+      }
+  }
 ```
 
 We've added 
@@ -1357,6 +1357,9 @@ and add the following inputs below the `Event Title` input.
       <span x-show="!!show_error" class="mb-1 block text-sm font-bold tracking-wide text-red-800">Missing information or some of the fields are invalid.</span>
     </div>
 ```
+
+> If you want to see how the file should look like,
+take a peek at [`lib/cal_web/live/app_live.html.heex`](https://github.com/dwyl/calendar/blob/05cf19f74ae5db59ea0d157bcd360a17aa60c1cf/lib/cal_web/live/app_live.html.heex).
 
 We also need to change the `app()` function
 to accomodate these changes.
