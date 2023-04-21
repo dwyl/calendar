@@ -415,7 +415,7 @@ as shown below.
 ```elixir
   def app(conn, _params) do
     # We fetch the access token to make the requests.
-    # If none is found, we redirect the user to the home page.
+    # If none is found, we redirect the person to the home page.
     case get_token(conn) do
       {:ok, token} ->
 
@@ -497,7 +497,7 @@ https://developers.google.com/calendar/api/v3/reference/events#resource-represen
 Great stuff! 🎉
 
 We can now *use* this information
-and show it to the user! 
+and show it to the person! 
 
 
 # 3. Converting our `app` page to a **LiveView**
@@ -532,7 +532,7 @@ defmodule CalWeb.AppLive do
   def mount(_params, _session, socket) do
 
     # We fetch the access token to make the requests.
-    # If none is found, we redirect the user to the home page.
+    # If none is found, we redirect the person to the home page.
     case get_token(socket) do
       {:ok, token} ->
 
@@ -664,10 +664,10 @@ You may check all the changes needed in
 # 4. Show the list of events from `Google Calendar API`
 
 Now that we have the event list from the `Google Calendar API`,
-let's show it to the user!
+let's show it to the person!
 By looking at the 
 [`Event` resource from the `Calendar API`](https://developers.google.com/calendar/api/v3/reference/events#resource),
-we will want the following to be shown to the user:
+we will want the following to be shown to the person:
 
 - the `start` date/datetime.
 - the `end` date/datetime.
@@ -841,12 +841,12 @@ you will see the following in your screen.
 
 Looking good!
 We are now successfully fetching the events
-and showing it to the user! 🥳
+and showing it to the person! 🥳
 
 
 # 5. Adding calendar 
 
-Now let's add a calendar for the user to have a way 
+Now let's add a calendar for the person to have a way 
 of selecting a date and filtering their events list
 according to the chosen date.
 
@@ -883,10 +883,8 @@ to look like so:
 ```js
 let liveSocket = new LiveSocket("/live", Socket, {
     dom: {
-        onBeforeElUpdated(from, to) {
-          if (from._x_dataStack) {
-            window.Alpine.clone(from, to)
-          }
+        onBeforeElUpdated(from, to){
+          if(from.__x){ window.Alpine.clone(from.__x, to) }
         }
     },
     params: {_csrf_token: csrfToken}
@@ -911,190 +909,167 @@ below the `<!--  Calendar and form section -->` line.
 Change it to the following:
 
 ```html
-    <div class="flex md:w-1/2 justify-center px-4 py-2">
+    <div class="flex justify-center px-4 py-2 md:w-1/2">
+      <div x-data="app()" x-init="[initDate(), getNoOfDays()]">
+        <!-- Calendar -->
+        <div class="container">
+          <div class="overflow-hidden rounded-lg bg-white shadow">
+            <div class="flex items-center justify-between px-6 py-2">
+              <div>
+                <span x-text="MONTH_NAMES[month]" class="text-lg font-bold text-gray-800"></span>
+                <span x-text="year" class="ml-1 text-lg font-normal text-gray-600"></span>
+              </div>
+              <div class="rounded-lg border px-1" style="padding-top: 2px;">
+                <button type="button" class="inline-flex cursor-pointer items-center rounded-lg p-1 leading-none transition duration-100 ease-in-out hover:bg-gray-200" x-bind:class="{'cursor-not-allowed opacity-25': month == 0 }" x-bind:disabled="month == 0 ? true : false" @click="month--; getNoOfDays()">
+                  <svg class="inline-flex h-6 w-6 leading-none text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <div class="inline-flex h-6 border-r"></div>
+                <button type="button" class="inline-flex cursor-pointer items-center rounded-lg p-1 leading-none transition duration-100 ease-in-out hover:bg-gray-200" x-bind:class="{'cursor-not-allowed opacity-25': month == 11 }" x-bind:disabled="month == 11 ? true : false" @click="month++; getNoOfDays()">
+                  <svg class="inline-flex h-6 w-6 leading-none text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-            <div x-data="app()" x-init="[initDate(), getNoOfDays()]">
+            <div class="-mx-1 -mb-1">
+              <div class="flex flex-wrap">
+                <template x-for="(day, index) in DAYS" x-bind:key="index">
+                  <div style="width: 14.26%" class="px-2 py-2">
+                    <div x-text="day" class="text-center text-sm font-bold uppercase tracking-wide text-gray-600"></div>
+                  </div>
+                </template>
+              </div>
 
-                <!-- Calendar -->
-                <div class="container">
-
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-
-                        <div class="flex items-center justify-between py-2 px-6">
-                            <div>
-                                <span x-text="MONTH_NAMES[month]" class="text-lg font-bold text-gray-800"></span>
-                                <span x-text="year" class="ml-1 text-lg text-gray-600 font-normal"></span>
-                            </div>
-                            <div class="border rounded-lg px-1" style="padding-top: 2px;">
-                                <button
-                                    type="button"
-                                    class="leading-none rounded-lg transition ease-in-out duration-100 inline-flex cursor-pointer hover:bg-gray-200 p-1 items-center"
-                                    x-bind:class="{'cursor-not-allowed opacity-25': month == 0 }"
-                                    x-bind:disabled="month == 0 ? true : false"
-                                    @click="month--; getNoOfDays()">
-                                    <svg class="h-6 w-6 text-gray-500 inline-flex leading-none"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                    </svg>
-                                </button>
-                                <div class="border-r inline-flex h-6"></div>
-                                <button
-                                    type="button"
-                                    class="leading-none rounded-lg transition ease-in-out duration-100 inline-flex items-center cursor-pointer hover:bg-gray-200 p-1"
-                                    x-bind:class="{'cursor-not-allowed opacity-25': month == 11 }"
-                                    x-bind:disabled="month == 11 ? true : false"
-                                    @click="month++; getNoOfDays()">
-                                    <svg class="h-6 w-6 text-gray-500 inline-flex leading-none"  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="-mx-1 -mb-1">
-                            <div class="flex flex-wrap">
-                                <template x-for="(day, index) in DAYS" x-bind:key="index">
-                                    <div style="width: 14.26%" class="px-2 py-2">
-                                        <div
-                                            x-text="day"
-                                            class="text-gray-600 text-sm uppercase tracking-wide font-bold text-center"></div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            <div class="flex flex-wrap border-t border-l">
-                                <template x-for="blankday in blankdays">
-                                    <div
-                                        style="width: 14.28%; height: 60px"
-                                        class="text-center border-r border-b px-4 pt-2"
-                                    ></div>
-                                </template>
-                                <template x-for="(date, dateIndex) in no_of_days" x-bind:key="dateIndex">
-                                    <div style="width: 14.28%; height:60px" class="px-4 pt-2 border-r border-b relative">
-                                        <div
-                                            @click="onClickCalendarDay(date)"
-                                            x-text="date"
-                                            class="inline-flex w-6 h-6 items-center justify-center cursor-pointer text-center leading-none rounded-full transition ease-in-out duration-100"
-                                            x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"
-                                        ></div>
-                                        <div style="height: 80px;" class="overflow-y-auto mt-1">
-
-                                            <template x-for="event in events.filter(e => new Date(e.event_date).toDateString() ===  new Date(year, month, date).toDateString() )">
-                                                <div
-                                                    class="px-2 py-1 rounded-lg mt-1 overflow-hidden border"
-                                                    x-bind:class="{
+              <div class="flex flex-wrap border-l border-t">
+                <template x-for="blankday in blankdays">
+                  <div style="width: 14.28%; height: 60px" class="border-b border-r px-4 pt-2 text-center"></div>
+                </template>
+                <template x-for="(date, dateIndex) in no_of_days" x-bind:key="dateIndex">
+                  <div style="width: 14.28%; height:60px" class="relative border-b border-r px-4 pt-2">
+                    <div @click="onClickCalendarDay(date)" x-text="date" class="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-center leading-none transition duration-100 ease-in-out" x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"></div>
+                    <div style="height: 80px;" class="mt-1 overflow-y-auto">
+                      <template x-for="event in events.filter(e => new Date(e.event_date).toDateString() ===  new Date(year, month, date).toDateString() )">
+                        <div
+                          class="mt-1 overflow-hidden rounded-lg border px-2 py-1"
+                          x-bind:class="{
                                                         'border-blue-200 text-blue-800 bg-blue-100': event.event_theme === 'blue',
                                                         'border-red-200 text-red-800 bg-red-100': event.event_theme === 'red',
                                                         'border-yellow-200 text-yellow-800 bg-yellow-100': event.event_theme === 'yellow',
                                                         'border-green-200 text-green-800 bg-green-100': event.event_theme === 'green',
                                                         'border-purple-200 text-purple-800 bg-purple-100': event.event_theme === 'purple'
                                                     }"
-                                                >
-                                                    <p x-text="event.event_title" class="text-sm truncate leading-tight"></p>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
+                        >
+                          <p x-text="event.event_title" class="truncate text-sm leading-tight"></p>
                         </div>
+                      </template>
                     </div>
-                </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                <div class="container mt-2">
-                    <div class="shadow w-full rounded-lg bg-white overflow-hidden w-full block p-8">
+        <div class="container mt-2">
+          <div class="block w-full w-full overflow-hidden rounded-lg bg-white p-8 shadow">
+            <h2 class="mb-6 border-b pb-2 text-2xl font-bold text-gray-800">Add Event Details</h2>
 
-                        <h2 class="font-bold text-2xl mb-6 text-gray-800 border-b pb-2">Add Event Details</h2>
-
-                        <div class="mb-4">
-                            <label class="text-gray-800 block mb-1 font-bold text-sm tracking-wide">Event title</label>
-                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" x-model="event_title">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="text-gray-800 block mb-1 font-bold text-sm tracking-wide">Event date</label>
-                            <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" type="text" x-model="event_date" readonly>
-                        </div>
-
-                        <div class="mt-8 text-right">
-                            <button type="button" class="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-2 px-4 border border-gray-700 rounded-lg shadow-sm" @click="addEvent()">
-                                Save Event
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="mb-4">
+              <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Event title</label>
+              <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_title" />
             </div>
 
-            <script>
-                const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            <div class="mb-4">
+              <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Event date</label>
+              <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_date" readonly />
+            </div>
 
-                function app() {
-                    return {
-                        month: '',
-                        year: '',
-                        no_of_days: [],
-                        blankdays: [],
-                        days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            <div class="mt-8 text-right">
+              <div class="mt-8 text-right">
+                <button type="button" class="mr-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-100" @click="openEventModal = !openEventModal; clearModalFormData()">Cancel</button>
+                <div class="mt-8 text-right">
+                  <button type="button" class="mr-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-100" @click="openEventModal = !openEventModal; clearModalFormData()">Cancel</button>
+                  <button type="button" class="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 font-semibold text-white shadow-sm hover:bg-gray-700" @click="addEvent()">Save Event</button>
+                </div>
+              </div>
+            </div>
+          </div>
 
-                        events: [],
+          <script>
+            const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-                        event_title: '',
-                        event_date: '',
+            function app() {
+                return {
+                    month: '',
+                    year: '',
+                    no_of_days: [],
+                    blankdays: [],
+                    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 
-                        initDate() {
-                            let today = new Date();
-                            this.month = today.getMonth();
-                            this.year = today.getFullYear();
-                            this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
-                        },
+                    events: [],
 
-                        isToday(date) {
-                            const today = new Date();
-                            const d = new Date(this.year, this.month, date);
+                    event_title: '',
+                    event_date: '',
 
-                            return today.toDateString() === d.toDateString() ? true : false;
-                        },
+                    initDate() {
+                        let today = new Date();
+                        this.month = today.getMonth();
+                        this.year = today.getFullYear();
+                        this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
+                    },
 
-                        onClickCalendarDay(date) {
-                            this.event_date = new Date(this.year, this.month, date).toDateString();
-                        },
+                    isToday(date) {
+                        const today = new Date();
+                        const d = new Date(this.year, this.month, date);
 
-                        clearModalFormData() {
-                            this.event_title = ''
-                            this.event_date = ''
-                        },
+                        return today.toDateString() === d.toDateString() ? true : false;
+                    },
 
-                        addEvent() {
-                            if (this.event_title == '') {
-                                return;
-                            }
+                    onClickCalendarDay(date) {
+                        this.event_date = new Date(this.year, this.month, date).toDateString();
+                    },
 
-                            // clear the form data
-                            this.clearModalFormData()
-                        },
+                    clearModalFormData() {
+                        this.event_title = ''
+                        this.event_date = ''
+                    },
 
-                        getNoOfDays() {
-                            let daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
-
-                            // find where to start calendar day of week
-                            let dayOfWeek = new Date(this.year, this.month).getDay();
-                            let blankdaysArray = [];
-                            for ( var i=1; i <= dayOfWeek; i++) {
-                                blankdaysArray.push(i);
-                            }
-
-                            let daysArray = [];
-                            for ( var i=1; i <= daysInMonth; i++) {
-                                daysArray.push(i);
-                            }
-
-                            this.blankdays = blankdaysArray;
-                            this.no_of_days = daysArray;
+                    addEvent() {
+                        if (this.event_title == '') {
+                            return;
                         }
+
+                        // clear the form data
+                        this.clearModalFormData()
+                    },
+
+                    getNoOfDays() {
+                        let daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
+
+                        // find where to start calendar day of week
+                        let dayOfWeek = new Date(this.year, this.month).getDay();
+                        let blankdaysArray = [];
+                        for ( var i=1; i <= dayOfWeek; i++) {
+                            blankdaysArray.push(i);
+                        }
+
+                        let daysArray = [];
+                        for ( var i=1; i <= daysInMonth; i++) {
+                            daysArray.push(i);
+                        }
+
+                        this.blankdays = blankdaysArray;
+                        this.no_of_days = daysArray;
                     }
                 }
-            </script>
-
+            }
+          </script>
+        </div>
+      </div>
     </div>
 ```
 
@@ -1115,4 +1090,195 @@ The reason we did this is because
 If you want to know more about *why*,
 please check https://github.com/dwyl/product-ux-research/issues/38.
 
+
+## 5.3 Retrieving the event lists by day
+
+Currently, the calendar by default
+shows the blue dot showcasing the current date.
+With this in mind, we want to fetch all the events
+for the given day.
+Every time a person clicks on another day,
+the events list should also change according to the chosen day.
+
+Let's change our `mount/3` function
+to fetch the events of the current day.
+We simply need to change the `params` variable
+to look like so:
+
+```elixir
+  params = %{
+    singleEvents: true,
+    timeMin: Timex.now |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+    timeMax: Timex.now |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
+  }
+```
+
+The sockets assigns will also be changed.
+We will assign the calendar as well,
+so it can be accessed later by other event handlers, 
+mainly when the person clicks on another date
+on the calendar.
+
+```elixir
+  {:ok, assign(socket, event_list: event_list.items, calendar: primary_calendar)}
+```
+
+Now we're ready to change the event lists
+*according to the chosen date**.
+For this, we are going to define
+a **hook** that we can call from the view template (`app_live.html.heex`)
+to later be handled by the LiveView (`app_live.ex`).
+To create this hook,
+head over to `assets/js/app.js`,
+create a `Hooks` varible
+and add it to the liveview variable instantiation.
+Like so.
+
+```js
+const Hooks = {}
+Hooks.DateClick = {
+    mounted() {
+      window.dateClickHook = this
+    },
+    changeDate(year, month, day) {
+        this.pushEvent('change-date', {year, month, day})
+    }
+}
+  
+
+let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+let liveSocket = new LiveSocket("/live", Socket, {
+    dom: {
+        onBeforeElUpdated(from, to){
+          if(from.__x){ window.Alpine.clone(from.__x, to) }
+        }
+    },
+    params: {_csrf_token: csrfToken},
+    hooks: Hooks
+})
+```
+
+We've created a hook called `dateClickHook`
+that will now be accessible from the view template file.
+This hook has a function called `changeDate`
+which will create an event in the liveview file
+by sending the year, month and date
+the person changed to.
+
+While we're at it,
+let's create this event handler!
+Head over to `lib/cal_web/live/app_live.ex`
+and create a new function
+with the following code:
+
+```elixir
+  def handle_event("change-date", %{"year" => year, "month" => month, "day" => day}, socket) do
+
+    # Get token and primary calendar from socket
+    {:ok, token} = get_token(socket)
+    primary_calendar = socket.assigns.calendar
+
+    # Parse new date
+    datetime = Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}") |> Timex.to_datetime()
+
+    # Fetch events list of new date
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+    params = %{
+      singleEvents: true,
+      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
+    }
+    {:ok, new_event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+    |> parse_body_response()
+
+    # Update socket assigns
+    {:noreply, assign(socket, event_list: new_event_list.items)}
+  end
+```
+
+As you can see, since we're receiving the new date,
+we are doing a similar process to what we're doing in the `mount/3` function:
+
+- getting the token to call the `Calendar API`.
+- parse the datetime we are changing into.
+- calling the endpoint with the new datetime 
+and fetching the event list for the new date.
+- updating the socket assigns with the new event list.
+
+
+We're nearly there! 🏃‍♂️
+
+The last thing we need to do 
+is to *change* our template file to accommodate these new changes!
+Head over to `lib/cal_web/live/app_live.html.heex`
+and locate the following line:
+
+```html
+<div class="flex flex-wrap border-l border-t">
+```
+
+Change it to:
+
+```html
+<div class="flex flex-wrap border-l border-t" phx-hook="DateClick" id="calendar-days">
+```
+
+We are using the [`phx-hook`](https://hexdocs.pm/phoenix_live_view/js-interop.html#client-hooks-via-phx-hook)
+attribute to embed the hook to the template 
+so it can be accessible in the client-side.
+We are going to make some changes to the 
+`app()` function inside 
+the `<script>` tag.
+
+```js
+            function app() {
+                return {
+                    month: '',
+                    year: '',
+                    chosen_day: '',
+                    no_of_days: [],
+                    blankdays: [],
+                    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+
+                    events: [],
+
+                    event_title: '',
+                    event_date: '',
+
+                    initDate() {
+                        let today = new Date();
+                        this.chosen_day = today.getUTCDate();
+                        this.month = today.getMonth();
+                        this.year = today.getFullYear();
+                        this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
+                    },
+
+                    isToday(day) {
+
+                        const chosen_date = new Date(this.year, this.month, this.chosen_day);
+                        const d = new Date(this.year, this.month, day);
+
+                        return chosen_date.toDateString() === d.toDateString() ? true : false;
+                    },
+
+                    onClickCalendarDay(day) {
+                        this.event_date = new Date(this.year, this.month, day).toDateString();
+                        this.chosen_day = day;
+                        window.dateClickHook.changeDate(this.year, this.month + 1, day);
+                    },
+                ....
+                }
+            }
+```
+
+We've added 
+a `chosen_day` variable
+which refers to the day the person 
+is currently watching.
+We've changed `isToday()`
+to mark the blue dot in the calendar
+to the day the person has chosen.
+Finally, we are now pushing an event
+to the liveview to be handled
+within the `onClickCalendarDay(date)` function.
 

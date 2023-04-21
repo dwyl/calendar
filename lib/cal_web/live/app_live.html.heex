@@ -1,5 +1,6 @@
 <div class="w-full p-4">
   <main role="main" class="flex w-full flex-col-reverse content-center justify-center md:flex-row">
+
     <!-- List of events -->
     <div class="flex flex-col md:w-1/2">
       <%= for event <- @event_list do %>
@@ -60,7 +61,7 @@
             </div>
 
             <div class="-mx-1 -mb-1">
-              <div class="flex flex-wrap">
+              <div class="flex flex-wrap" >
                 <template x-for="(day, index) in DAYS" x-bind:key="index">
                   <div style="width: 14.26%" class="px-2 py-2">
                     <div x-text="day" class="text-center text-sm font-bold uppercase tracking-wide text-gray-600"></div>
@@ -68,13 +69,13 @@
                 </template>
               </div>
 
-              <div class="flex flex-wrap border-l border-t">
+              <div class="flex flex-wrap border-l border-t"  phx-hook="DateClick" id="calendar-days">
                 <template x-for="blankday in blankdays">
                   <div style="width: 14.28%; height: 60px" class="border-b border-r px-4 pt-2 text-center"></div>
                 </template>
                 <template x-for="(date, dateIndex) in no_of_days" x-bind:key="dateIndex">
                   <div style="width: 14.28%; height:60px" class="relative border-b border-r px-4 pt-2">
-                    <div @click="onClickCalendarDay(date)" x-text="date" class="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-center leading-none transition duration-100 ease-in-out" x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"></div>
+                    <div @click="onClickCalendarDay(date);" x-text="date" class="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-center leading-none transition duration-100 ease-in-out" x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"></div>
                     <div style="height: 80px;" class="mt-1 overflow-y-auto">
                       <template x-for="event in events.filter(e => new Date(e.event_date).toDateString() ===  new Date(year, month, date).toDateString() )">
                         <div
@@ -114,9 +115,7 @@
 
             <div class="mt-8 text-right">
               <div class="mt-8 text-right">
-                <button type="button" class="mr-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-100" @click="openEventModal = !openEventModal; clearModalFormData()">Cancel</button>
                 <div class="mt-8 text-right">
-                  <button type="button" class="mr-2 rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 shadow-sm hover:bg-gray-100" @click="openEventModal = !openEventModal; clearModalFormData()">Cancel</button>
                   <button type="button" class="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 font-semibold text-white shadow-sm hover:bg-gray-700" @click="addEvent()">Save Event</button>
                 </div>
               </div>
@@ -131,6 +130,7 @@
                 return {
                     month: '',
                     year: '',
+                    chosen_day: '',
                     no_of_days: [],
                     blankdays: [],
                     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -142,20 +142,24 @@
 
                     initDate() {
                         let today = new Date();
+                        this.chosen_day = today.getUTCDate();
                         this.month = today.getMonth();
                         this.year = today.getFullYear();
                         this.datepickerValue = new Date(this.year, this.month, today.getDate()).toDateString();
                     },
 
-                    isToday(date) {
-                        const today = new Date();
-                        const d = new Date(this.year, this.month, date);
+                    isToday(day) {
 
-                        return today.toDateString() === d.toDateString() ? true : false;
+                        const chosen_date = new Date(this.year, this.month, this.chosen_day);
+                        const d = new Date(this.year, this.month, day);
+
+                        return chosen_date.toDateString() === d.toDateString() ? true : false;
                     },
 
-                    onClickCalendarDay(date) {
-                        this.event_date = new Date(this.year, this.month, date).toDateString();
+                    onClickCalendarDay(day) {
+                        this.event_date = new Date(this.year, this.month, day).toDateString();
+                        this.chosen_day = day;
+                        window.dateClickHook.changeDate(this.year, this.month + 1, day);
                     },
 
                     clearModalFormData() {

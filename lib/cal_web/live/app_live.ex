@@ -17,21 +17,46 @@ defmodule CalWeb.AppLive do
 
         # Get events of first calendar
         params = %{
-          maxResults: 25,
           singleEvents: true,
+          timeMin: Timex.now |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+          timeMax: Timex.now |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
         }
         {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
         |> parse_body_response()
 
 
-        {:ok, assign(socket, event_list: event_list.items)}
+        {:ok, assign(socket, event_list: event_list.items, calendar: primary_calendar)}
 
       _ ->
         {:ok, push_redirect(socket, to: ~p"/")}
     end
   end
 
+  def handle_event("change-date", %{"year" => year, "month" => month, "day" => day}, socket) do
 
+    # Get token and primary calendar from socket
+    {:ok, token} = get_token(socket)
+    primary_calendar = socket.assigns.calendar
+
+    # Parse new date
+    datetime = Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}") |> Timex.to_datetime()
+
+    # Fetch events list of new date
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+    params = %{
+      singleEvents: true,
+      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
+    }
+    {:ok, new_event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+    |> parse_body_response()
+
+    # Update socket assigns
+    {:noreply, assign(socket, event_list: new_event_list.items)}
+  end
+
+
+  # Get token from the flash session
   defp get_token(socket) do
     case Phoenix.Controller.get_flash(socket, :token) do
       nil -> {:error, nil}
@@ -40,6 +65,7 @@ defmodule CalWeb.AppLive do
   end
 
 
+  # Parse JSON body response
   defp parse_body_response({:error, err}), do: {:error, err}
   defp parse_body_response({:ok, response}) do
     body = Map.get(response, :body)
