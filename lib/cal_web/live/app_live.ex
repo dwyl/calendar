@@ -32,6 +32,7 @@ defmodule CalWeb.AppLive do
     end
   end
 
+
   def handle_event("change-date", %{"year" => year, "month" => month, "day" => day}, socket) do
 
     # Get token and primary calendar from socket
@@ -53,6 +54,45 @@ defmodule CalWeb.AppLive do
 
     # Update socket assigns
     {:noreply, assign(socket, event_list: new_event_list.items)}
+  end
+
+
+  def handle_event("create-event", %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day}, socket) do
+
+    # Get token and primary calendar from socket
+    {:ok, token} = get_token(socket)
+    primary_calendar = socket.assigns.calendar
+
+    # Setting `start` and `stop` according to the `all-day` boolean,
+    # If `all-day` is set to true, we should return the date instead of the datetime,
+    # as per https://developers.google.com/calendar/api/v3/reference/events/insert.
+    start = case all_day do
+      true -> %{date: date}
+      false -> %{datetime: Timex.parse!("#{date} #{start} +0000", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+    end
+
+    stop = case all_day do
+      true -> %{date: date}
+      false -> %{datetime: Timex.parse!("#{date} #{stop} +0000", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+    end
+
+    # Post new event
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+    body = Jason.encode!(%{summary: title, start: start, end: stop })
+    {:ok, _response} = HTTPoison.post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
+
+    # Parse new date to datetime and fetch events to refresh
+    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime()
+
+    params = %{
+      singleEvents: true,
+      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
+    }
+    {:ok, new_event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+    |> parse_body_response()
+
+    {:noreply, socket}
   end
 
 

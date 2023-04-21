@@ -29,6 +29,10 @@ Hooks.DateClick = {
     },
     changeDate(year, month, day) {
         this.pushEvent('change-date', {year, month, day})
+    },
+    // Receives the `title` string, the `start` time and `end` time and a boolean `all_day` stating if it's all day or not
+    createEvent(title, date, start, stop, all_day) {
+        this.pushEvent('create-event', {title, date, start, stop, all_day})
     }
 }
   

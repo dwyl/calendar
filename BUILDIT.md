@@ -38,6 +38,7 @@ so you can follow this tutorial more precisely.
   - [5.1 Install `Alpine.js`](#51-install-alpinejs)
   - [5.2 Importing the calendar code](#52-importing-the-calendar-code)
   - [5.3 Retrieving the event lists by day](#53-retrieving-the-event-lists-by-day)
+  - [6. Creating event](#6-creating-event)
 
 
 # 0. Creating sample `Phoenix` project
@@ -1286,4 +1287,296 @@ If you want to see all the changes made,
 please check the commit
 [51a1fe0](https://github.com/dwyl/calendar/pull/25/commits/51a1fe03116a2ad398623296c50c322dba252037#diff-2126216ecd2ff9ae9b5f0c1e84d8fecb4ee4e54dc21685f69a590c2162dec186).
 
+
+## 6. Creating event
+
+Now let's make use of our fancy form
+to create an event!
+If we have a look at 
+https://developers.google.com/calendar/api/v3/reference/events/insert,
+we see that we need *at least*
+an **end** and **start** object.
+We will send the following attributes:
+
+- **start** object with a **datetime** nested field.
+If the event occurs all day,
+we send a **date** nested field instead.
+
+- **end** object with a **datetime** nested field.
+If the event occurs all day,
+we send a **date** nested field instead.
+
+- **summary** field, pertaining to the title of the event.
+
+For this, 
+we are going to need to add two new fields to our form:
+one for the *start time* and another for the *end*.
+Since people can also have events that
+*span all da*,
+we'll add a checkbox for this as well.
+
+Taking this into account,
+we will also want to inform the user 
+if anything is missing or not.
+We'll not go deep here, 
+we'll just inform the person that something is wrong
+in case any field is invalid or missing.
+
+This incurs some form validation 
+that we'll need to do with `Alpine.js`.
+
+Taking all of these requirements into account,
+open `lib/cal_web/live/app_live.html.heex`
+and add the following inputs below the `Event Title` input.
+
+```html
+    <div class="mb-4 flex flex-row justify-between">
+        <div>
+            <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Start</label>
+            <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_start" />
+        </div>
+        <div>
+            <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">End</label>
+            <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_stop" />
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <label class="label cursor-pointer">
+            <input type="checkbox" class="checkbox" x-model="event_all_day" />
+            <label class="mb-1 text-sm font-bold tracking-wide text-gray-800">All day</label>
+        </label>
+    </div>
+
+    <div class="mb-4">
+      <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Event date</label>
+      <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_date" readonly />
+    </div>
+
+    <div class="mb-2">
+      <span x-show="!!show_error" class="mb-1 block text-sm font-bold tracking-wide text-red-800">Missing information or some of the fields are invalid.</span>
+    </div>
+```
+
+We also need to change the `app()` function
+to accomodate these changes.
+We are going to add `event_start`,
+`event_stop`, `event_all_day` and `show_error` 
+as attributes so we can use them to create our event in the LiveView.
+We'll also add form validation (`validateForm()`)
+that will be called when the person
+clicks the button to create an event (`addEvent()`).
+
+Change `app()` so it looks like the following.
+
+
+```js
+function app() {
+    return {
+        month: '',
+        year: '',
+        chosen_day: '',
+        no_of_days: [],
+        blankdays: [],
+        days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        show_error: false,
+
+        events: [],
+
+        event_title: '',
+        event_start: '',
+        event_stop: '',
+        event_all_day: false,
+        event_date: '',
+
+        initDate() {
+            let today = new Date();
+            this.chosen_day = today.getUTCDate();
+            this.month = today.getMonth();
+            this.year = today.getFullYear();
+            this.event_date = new Date(this.year, this.month, today.getDate()).toDateString();
+        },
+
+        isToday(day) {
+
+            const chosen_date = new Date(this.year, this.month, this.chosen_day);
+            const d = new Date(this.year, this.month, day);
+
+            return chosen_date.toDateString() === d.toDateString() ? true : false;
+        },
+
+        onClickCalendarDay(day) {
+            this.event_date = new Date(this.year, this.month, day).toDateString();
+            this.chosen_day = day;
+            window.dateClickHook.changeDate(this.year, this.month + 1, day);
+        },
+
+        clearModalFormData() {
+            this.event_title = ''
+            this.event_start = ''
+            this.event_stop = ''
+            this.event_all_day = false
+            this.show_error = false
+        },
+
+        addEvent() {
+            this.show_error = false
+            if (!this.validateForm()) {
+                this.show_error = true
+                return;
+            }
+
+            // get date - https://stackoverflow.com/questions/23593052/format-javascript-date-as-yyyy-mm-dd
+            let date = new Date(Date.parse(this.event_date))
+            const offset = date.getTimezoneOffset()
+            date = new Date(date.getTime() - (offset*60*1000))
+            date = date.toISOString().split('T')[0]
+
+            // push event
+            window.dateClickHook.createEvent(this.event_title, date, this.event_start, this.event_stop, this.event_all_day);
+
+            // clear the form data
+            this.clearModalFormData()
+        },
+
+        validateForm() {
+            // Check if title is empty
+            if (this.event_title.trim() == '') {
+                return false
+            }
+
+            // Check if start and stop are empty
+            if (this.event_start.trim() === '' && this.event_stop.trim() === '' && this.event_all_day === false) {
+                return false
+            }
+
+            // Check if start or stop are valid
+            const hour_minute_regex = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/;
+            if((!hour_minute_regex.test(this.event_start) || !hour_minute_regex.test(this.event_stop)) && this.event_all_day === false) {
+                return false
+            }
+
+            // Check if start is before end
+            // https://stackoverflow.com/questions/6212305/how-can-i-compare-two-time-strings-in-the-format-hhmmss
+            if((this.event_start > this.event_stop) && this.event_all_day === false) {
+                return false
+            }
+
+            return true
+        },
+
+        getNoOfDays() {
+            let daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
+
+            // find where to start calendar day of week
+            let dayOfWeek = new Date(this.year, this.month).getDay();
+            let blankdaysArray = [];
+            for ( var i=1; i <= dayOfWeek; i++) {
+                blankdaysArray.push(i);
+            }
+
+            let daysArray = [];
+            for ( var i=1; i <= daysInMonth; i++) {
+                daysArray.push(i);
+            }
+
+            this.blankdays = blankdaysArray;
+            this.no_of_days = daysArray;
+        }
+    }
+}
+```
+
+After changing this template view,
+your form should look like so.
+
+<p align="center">
+  <img width="700" alt="with_calendar1" src="https://user-images.githubusercontent.com/17494745/233706499-e6d0f7a2-05c7-4085-9347-8911f5eba741.png">
+</p>
+
+
+Now, similarly to what we've done before,
+we want to create another hook that will be called
+when the person creates the event.
+This event will later be handled inside the `LiveView`.
+
+Open `assets/js/app.js` 
+and add the `createEvent()` function
+inside the `Hook` variable.
+
+```js
+const Hooks = {}
+Hooks.DateClick = {
+    mounted() {
+      window.dateClickHook = this
+    },
+    changeDate(year, month, day) {
+        this.pushEvent('change-date', {year, month, day})
+    },
+    // Receives the `title` string, the `start` time and `end` time and a boolean `all_day` stating if it's all day or not
+    createEvent(title, date, start, stop, all_day) {
+        this.pushEvent('create-event', {title, date, start, stop, all_day})
+    }
+}
+```
+
+Now all that's left is handling 
+the event in our LiveView!
+Open `lib/cal_web/live/app_live.ex`
+and add this function.
+
+```elixir
+  def handle_event("create-event", %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day}, socket) do
+
+    # Get token and primary calendar from socket
+    {:ok, token} = get_token(socket)
+    primary_calendar = socket.assigns.calendar
+
+    # Setting `start` and `stop` according to the `all-day` boolean,
+    # If `all-day` is set to true, we should return the date instead of the datetime,
+    # as per https://developers.google.com/calendar/api/v3/reference/events/insert.
+    start = case all_day do
+      true -> %{date: date}
+      false -> %{datetime: Timex.parse!("#{date} #{start} +0000", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+    end
+
+    stop = case all_day do
+      true -> %{date: date}
+      false -> %{datetime: Timex.parse!("#{date} #{stop} +0000", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+    end
+
+    # Post new event
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+    body = Jason.encode!(%{summary: title, start: start, end: stop })
+    {:ok, _response} = HTTPoison.post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
+
+    # Parse new date to datetime and fetch events to refresh
+    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime()
+
+    params = %{
+      singleEvents: true,
+      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
+    }
+    {:ok, new_event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+    |> parse_body_response()
+
+    {:noreply, socket}
+  end
+```
+
+According to the `Calendar API`
+in https://developers.google.com/calendar/api/v3/reference/events/insert,
+if the person wants to mark an event as "all-day",
+we sent the `start` or `end` as **dates** instead of **datetimes**.
+We do this distinction at the top of the function.
+
+We then post the event with the given parameters 
+and refresh the events list!
+Simple, right?
+
+That should be it!
+We are not successfully *listing*
+but also *creating* events using `Google API`!
+🎉🎉
 
