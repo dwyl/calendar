@@ -1282,3 +1282,8 @@ Finally, we are now pushing an event
 to the liveview to be handled
 within the `onClickCalendarDay(date)` function.
 
+If you want to see all the changes made,
+please check the commit
+[51a1fe0](https://github.com/dwyl/calendar/pull/25/commits/51a1fe03116a2ad398623296c50c322dba252037#diff-2126216ecd2ff9ae9b5f0c1e84d8fecb4ee4e54dc21685f69a590c2162dec186).
+
+
