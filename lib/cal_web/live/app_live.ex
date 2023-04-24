@@ -1,7 +1,7 @@
 defmodule CalWeb.AppLive do
   use CalWeb, :live_view
   import CalWeb.AppHTML
-
+  import Cal.HTTPoison
 
   def mount(params, session, socket) do
     case connected?(socket) do
@@ -79,7 +79,7 @@ defmodule CalWeb.AppLive do
     headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
 
     # Get primary calendar
-    {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+    {:ok, primary_calendar} = httpoison().get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
     |> parse_body_response()
 
     # Get events of primary calendar
@@ -88,7 +88,7 @@ defmodule CalWeb.AppLive do
       timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
       timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
     }
-    {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+    {:ok, event_list} = httpoison().get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
     |> parse_body_response()
 
     {primary_calendar, event_list}
@@ -101,7 +101,7 @@ defmodule CalWeb.AppLive do
     headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
 
     # Get primary calendar
-    {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+    {:ok, primary_calendar} = httpoison().get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
     |> parse_body_response()
 
     # Setting `start` and `stop` according to the `all-day` boolean,

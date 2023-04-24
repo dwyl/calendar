@@ -771,12 +771,15 @@ Change it to the following.
 ```html
 <div class="w-full p-4">
   <main role="main" class="flex w-full flex-col content-center justify-center md:flex-row">
+    <h2 class="text-5xl font-medium leading-tight text-slate-900">List of events</h2>
+    <h2 class="text-md leading-tight text-slate-600">Click on a date and the list of events will be updated automatically.</h2>
+    
     <!-- List of events -->
 
     <div class="flex flex-auto flex-col">
 
         <%= for event <- @event_list do %>
-            <div class="relative block h-fit w-full overflow-hidden rounded-lg border border-gray-100 mt-2">
+            <div class="relative block h-fit w-full overflow-hidden rounded-lg border border-gray-100 mt-4">
                 <div class="flex flex-row">
                 <div class="flex w-14 flex-col items-center justify-center bg-red-700 py-2 pl-3 pr-3 text-white">
                     <h3 class="text-xs"><%= render_date(event).month %></h3>
