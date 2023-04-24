@@ -9,22 +9,8 @@ defmodule CalWeb.AppLive do
     case get_token(socket) do
       {:ok, token} ->
 
-        headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
-
-        # Get primary calendar
-        {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
-        |> parse_body_response()
-
-        # Get events of first calendar
-        params = %{
-          singleEvents: true,
-          timeMin: Timex.now |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
-          timeMax: Timex.now |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
-        }
-        {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
-        |> parse_body_response()
-
-
+        # Get event list and update socket
+        {primary_calendar, event_list} = get_event_list(token, Timex.now)
         {:ok, assign(socket, event_list: event_list.items, calendar: primary_calendar)}
 
       _ ->
@@ -35,22 +21,13 @@ defmodule CalWeb.AppLive do
 
   def handle_event("change-date", %{"year" => year, "month" => month, "day" => day}, socket) do
 
-    # Get token and primary calendar from socket
+    # Get token from socket and primary calendar
     {:ok, token} = get_token(socket)
-    primary_calendar = socket.assigns.calendar
 
     # Parse new date
     datetime = Timex.parse!("#{year}-#{month}-#{day}", "{YYYY}-{M}-{D}") |> Timex.to_datetime()
 
-    # Fetch events list of new date
-    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
-    params = %{
-      singleEvents: true,
-      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
-      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
-    }
-    {:ok, new_event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
-    |> parse_body_response()
+    {_primary_calendar, new_event_list} = get_event_list(token, datetime)
 
     # Update socket assigns
     {:noreply, assign(socket, event_list: new_event_list.items)}
@@ -59,9 +36,51 @@ defmodule CalWeb.AppLive do
 
   def handle_event("create-event", %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day}, socket) do
 
-    # Get token and primary calendar from socket
+    # Get token and primary calendar
     {:ok, token} = get_token(socket)
-    primary_calendar = socket.assigns.calendar
+
+    # Post new event
+    {:ok, _response} = create_event(token, %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day})
+
+    # Parse new date to datetime and fetch events to refresh
+    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime()
+    {_primary_calendar, new_event_list} = get_event_list(token, datetime)
+
+    {:noreply, assign(socket, event_list: new_event_list.items)}
+  end
+
+
+  # Gets the event list of primary calendar.
+  # We pass on the `token` and the `datetime` of the day to fetch the events.
+  defp get_event_list(token, datetime) do
+
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+
+    # Get primary calendar
+    {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+    |> parse_body_response()
+
+    # Get events of primary calendar
+    params = %{
+      singleEvents: true,
+      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
+      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
+    }
+    {:ok, event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
+    |> parse_body_response()
+
+    {primary_calendar, event_list}
+  end
+
+
+  # Create new event to the primary calendar.
+  defp create_event(token, %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day}) do
+
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+
+    # Get primary calendar
+    {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+    |> parse_body_response()
 
     # Setting `start` and `stop` according to the `all-day` boolean,
     # If `all-day` is set to true, we should return the date instead of the datetime,
@@ -77,22 +96,8 @@ defmodule CalWeb.AppLive do
     end
 
     # Post new event
-    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
     body = Jason.encode!(%{summary: title, start: start, end: stop })
-    {:ok, _response} = HTTPoison.post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
-
-    # Parse new date to datetime and fetch events to refresh
-    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime()
-
-    params = %{
-      singleEvents: true,
-      timeMin: datetime |> Timex.beginning_of_day() |> Timex.format!("{RFC3339}"),
-      timeMax: datetime |> Timex.end_of_day() |> Timex.format!("{RFC3339}")
-    }
-    {:ok, new_event_list} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", headers, params: params)
-    |> parse_body_response()
-
-    {:noreply, socket}
+    HTTPoison.post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
   end
 
 
