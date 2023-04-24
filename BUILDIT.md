@@ -38,8 +38,10 @@ so you can follow this tutorial more precisely.
   - [5.1 Install `Alpine.js`](#51-install-alpinejs)
   - [5.2 Importing the calendar code](#52-importing-the-calendar-code)
   - [5.3 Retrieving the event lists by day](#53-retrieving-the-event-lists-by-day)
-  - [6. Creating event](#6-creating-event)
-  - [7. Organizing `app_live.ex`](#7-organizing-app_liveex)
+- [6. Creating event](#6-creating-event)
+- [7. Organizing `app_live.ex`](#7-organizing-app_liveex)
+- [8. Fixing queries for users on different timezones](#8-fixing-queries-for-users-on-different-timezones)
+  - [8.1 Fetching events with timezone on `mount`](#81-fetching-events-with-timezone-on-mount)
 
 
 # 0. Creating sample `Phoenix` project
@@ -1285,7 +1287,7 @@ please check the commit
 [51a1fe0](https://github.com/dwyl/calendar/pull/25/commits/51a1fe03116a2ad398623296c50c322dba252037#diff-2126216ecd2ff9ae9b5f0c1e84d8fecb4ee4e54dc21685f69a590c2162dec186).
 
 
-## 6. Creating event
+# 6. Creating event
 
 Now let's make use of our fancy form
 to create an event!
@@ -1581,7 +1583,7 @@ but also *creating* events using `Google API`!
 🎉🎉
 
 
-## 7. Organizing `app_live.ex`
+# 7. Organizing `app_live.ex`
 
 When we are fetching the information from the `Calendar API`,
 we are repeating code throughout `lib/cal_web/live/app_live.ex`.
@@ -1734,3 +1736,255 @@ It's worth noting that
 both of these functions
 deal with the **primary calendar**
 of the logged in person.
+
+
+# 8. Fixing queries for users on different timezones
+
+As it stands,
+we are defaulting the information 
+we send to the `Calendar API` assuming
+the user is located within the 
+[**`UTC` Timezone**](https://en.wikipedia.org/wiki/Coordinated_Universal_Time).
+
+However,
+this will pose some problems 
+for users outside this timezone
+when querying and creating events.
+
+So let's tackle this issue!
+We are going to be sending
+the information of the timezone of the *client*
+to the `LiveView` 
+and update the way we use `Timex`
+and format our datetimes when contacting with the `Calendar API`.
+
+Head over to `assets/js/app.js`.
+We are going to be adding the following code to the top of the file.
+
+```js
+function convertOffset(gmt_offset) {
+    var time = gmt_offset.toString().split(".");
+    var hour = parseInt(time[0]);
+    var negative = hour < 0 ? true : false;
+    hour = Math.abs(hour) < 10 ? "0" + Math.abs(hour) : Math.abs(hour);
+    hour = negative ? "-" + hour : "+" + hour;
+    return time[1] ? hour+(time[1]*6).toString() : hour + "00";
+}
+
+const hoursFromUTC = convertOffset(-new Date().getTimezoneOffset()/60);
+```
+
+We are using the code found in 
+https://stackoverflow.com/questions/15687872/convert-timezone-offset-number-of-hours-to-timezone-offset-in-military-hours
+which will convert the 
+number of hours of the client to
+"military-style".
+We are doing this because we can use this format
+when creating datetime objects using `Timex`.
+See https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html#module-time-zones
+
+We are going to be using the `hoursFromUTC` variable
+on three occasions:
+
+- in the `'change-date'` event.
+- in the `'create-event'` event.
+- when creating the `liveSocket` variable.
+
+With this in mind,
+change the `Hooks` variable
+and the `liveSocket` variable like so.
+
+```js
+Hooks.DateClick = {
+    mounted() {
+      window.dateClickHook = this
+    },
+    changeDate(year, month, day) {
+        this.pushEvent('change-date', {year, month, day, hoursFromUTC}) // change here
+    },
+    createEvent(title, date, start, stop, all_day) {
+        this.pushEvent('create-event', {title, date, start, stop, all_day, hoursFromUTC}) // change here
+    }
+}
+  
+
+let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+let liveSocket = new LiveSocket("/live", Socket, {
+    dom: {
+        onBeforeElUpdated(from, to){
+          if(from.__x){ window.Alpine.clone(from.__x, to) }
+        }
+    },
+    params: {_csrf_token: csrfToken, hoursFromUTC: hoursFromUTC}, // change here
+    hooks: Hooks
+})
+```
+
+Now let's *use* this timezone information
+in our LiveView!
+
+Head over to `lib/cal_web/live/app_live.ex`
+and change the `create_event/2` function to this:
+
+```elixir
+  defp create_event(token, %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day, "hoursFromUTC" => hoursFromUTC}) do
+
+    headers = ["Authorization": "Bearer #{token.access_token}", "Content-Type": "application/json"]
+
+    # Get primary calendar
+    {:ok, primary_calendar} = HTTPoison.get("https://www.googleapis.com/calendar/v3/calendars/primary", headers)
+    |> parse_body_response()
+
+    # Setting `start` and `stop` according to the `all-day` boolean,
+    # If `all-day` is set to true, we should return the date instead of the datetime,
+    # as per https://developers.google.com/calendar/api/v3/reference/events/insert.
+    start = case all_day do
+      true -> %{date: date}
+      false -> %{datetime: Timex.parse!("#{date} #{start} #{hoursFromUTC}", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+    end
+
+    stop = case all_day do
+      true -> %{date: date}
+      false -> %{datetime: Timex.parse!("#{date} #{stop} #{hoursFromUTC}", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+    end
+
+    # Post new event
+    body = Jason.encode!(%{summary: title, start: start, end: stop })
+    HTTPoison.post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
+  end
+```
+
+We are receiving the `"hoursFromUTC"` variable
+and *using it* in the `start` and `stop` variables
+to correctly embed the timezone in the date object
+to later be queried.
+
+Next, 
+we need to make some changes to the `handle_event/3` functions.
+
+```elixir
+  def handle_event("change-date", %{"year" => year, "month" => month, "day" => day, "hoursFromUTC" => hoursFromUTC}, socket) do
+
+    # Get token from socket and primary calendar
+    {:ok, token} = get_token(socket)
+
+    # Parse new date
+    datetime = Timex.parse!("#{year}-#{month}-#{day} #{hoursFromUTC}", "{YYYY}-{M}-{D} {Z}") |> Timex.to_datetime()
+
+    {_primary_calendar, new_event_list} = get_event_list(token, datetime)
+
+    # Update socket assigns
+    {:noreply, assign(socket, event_list: new_event_list.items)}
+  end
+
+
+  def handle_event("create-event", %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day, "hoursFromUTC" => hoursFromUTC}, socket) do
+
+    # Get token and primary calendar
+    {:ok, token} = get_token(socket)
+
+    # Post new event
+    {:ok, _response} = create_event(token, %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day, "hoursFromUTC" => hoursFromUTC})
+
+    # Parse new date to datetime and fetch events to refresh
+    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime(timezone = Timex.Timezone.name_of(hoursFromUTC))
+    {_primary_calendar, new_event_list} = get_event_list(token, datetime)
+
+    {:noreply, assign(socket, event_list: new_event_list.items)}
+  end
+```
+
+The only changes we are making 
+in both of these functions is that
+we are now receiving `hoursFromUTC`
+and *using it* to embed
+the timezone in the dates
+before using the date when making requests
+to the `Calendar API`.
+We are using 
+[`Timex.Timezone.name_of/1`](https://hexdocs.pm/timex/Timex.Timezone.html#name_of/1)
+to get the timezone object.
+
+
+## 8.1 Fetching events with timezone on `mount`
+
+We also need to send information 
+of the timezone *when the LiveView is mounted*.
+The `mount/2` function is executed two times:
+
+- the first is when the HTML
+is fully rendered.
+- the second time is when the 
+client *connects* to the LiveView socket. 
+
+If we were to inspect the `hoursFromUTC`
+parameter we are sending from the client
+when mounting the LiveView
+by using
+[`get_connect_params/1`](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#get_connect_params/1),
+we would have two results:
+a `nil` on the first execution
+and the offset value on the second.
+
+With this in mind,
+we are only going to fetch the events
+on mount 
+**after** the client is connected to the socket.
+
+Therefore,
+we are going to split
+the `mount/3` function in two!
+
+```elixir
+  def mount(params, session, socket) do
+    case connected?(socket) do
+      true -> connected_mount(params, session, socket)
+      false -> {:ok, assign(socket, event_list: [])}
+    end
+  end
+
+
+  def connected_mount(_params, _session, socket) do
+
+    # Getting information about the timezone of the client
+    hoursFromUTC = case get_connect_params(socket) do
+      nil -> "+0000"
+      params -> Map.get(params, "hoursFromUTC", "+0000")
+    end
+
+    timezone = Timex.Timezone.name_of(hoursFromUTC)
+
+    # We fetch the access token to make the requests.
+    # If none is found, we redirect the user to the home page.
+    case get_token(socket) do
+      {:ok, token} ->
+
+        # Get event list and update socket
+        {primary_calendar, event_list} = get_event_list(token, Timex.now(timezone))
+        {:ok, assign(socket, event_list: event_list.items, calendar: primary_calendar)}
+
+      _ ->
+        {:ok, push_redirect(socket, to: ~p"/")}
+    end
+  end
+```
+
+We fetch the list of events
+**only if the client is connected**
+by using the 
+[`connected?/1`](https://hexdocs.pm/phoenix_live_view/Phoenix.LiveView.html#connected?/1) 
+function.
+If the client is connected,
+`connected_mount/3` is called 
+and fetches the list of events, 
+as it was done prior to the change,
+with the exception of the `hoursFromUTC` being used
+to set the timezone of the datetime object
+that is used to fetch the list of events.
+
+And you're all done! 🎉
+
+Making requests with the `Calendar API`
+now works with the proper timezone
+of the client! 
+Awesome!
