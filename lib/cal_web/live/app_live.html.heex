@@ -25,7 +25,7 @@
             <div class="mt-1">
               <p class="w-full text-sm text-gray-500">
                 <span>Organized by: </span>
-                <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") %></span>
+                <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") || Map.get(event, "organizer") |> Map.get("email") %></span>
               </p>
             </div>
           </div>

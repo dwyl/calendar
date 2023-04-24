@@ -29,7 +29,6 @@ defmodule CalWeb.AppLive do
         # Get event list and update socket
         {primary_calendar, event_list} = get_event_list(token, Timex.now(timezone))
         {:ok, assign(socket, event_list: event_list.items, calendar: primary_calendar)}
-
       _ ->
         {:ok, push_redirect(socket, to: ~p"/")}
     end
@@ -66,7 +65,7 @@ defmodule CalWeb.AppLive do
     {:ok, _response} = create_event(token, %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day, "hoursFromUTC" => hoursFromUTC})
 
     # Parse new date to datetime and fetch events to refresh
-    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime(timezone = Timex.Timezone.name_of(hoursFromUTC))
+    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime(Timex.Timezone.name_of(hoursFromUTC))
     {_primary_calendar, new_event_list} = get_event_list(token, datetime)
 
     {:noreply, assign(socket, event_list: new_event_list.items)}

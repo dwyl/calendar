@@ -795,7 +795,7 @@ Change it to the following.
                     <div class="mt-1">
                     <p class="w-full text-sm text-gray-500">
                         <span>Organized by: </span>
-                        <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") %></span>
+                        <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") || Map.get(event, "organizer") |> Map.get("email") %></span>
                     </p>
                     </div>
                 </div>
@@ -1887,7 +1887,7 @@ we need to make some changes to the `handle_event/3` functions.
     {:ok, _response} = create_event(token, %{"title" => title, "date" => date, "start" => start, "stop" => stop, "all_day" => all_day, "hoursFromUTC" => hoursFromUTC})
 
     # Parse new date to datetime and fetch events to refresh
-    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime(timezone = Timex.Timezone.name_of(hoursFromUTC))
+    datetime = Timex.parse!(date, "{YYYY}-{M}-{D}") |> Timex.to_datetime(Timex.Timezone.name_of(hoursFromUTC))
     {_primary_calendar, new_event_list} = get_event_list(token, datetime)
 
     {:noreply, assign(socket, event_list: new_event_list.items)}
