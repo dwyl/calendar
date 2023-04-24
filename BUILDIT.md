@@ -1842,12 +1842,12 @@ and change the `create_event/2` function to this:
     # as per https://developers.google.com/calendar/api/v3/reference/events/insert.
     start = case all_day do
       true -> %{date: date}
-      false -> %{datetime: Timex.parse!("#{date} #{start} #{hoursFromUTC}", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+      false -> %{dateTime: Timex.parse!("#{date} #{start} #{hoursFromUTC}", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
     end
 
     stop = case all_day do
       true -> %{date: date}
-      false -> %{datetime: Timex.parse!("#{date} #{stop} #{hoursFromUTC}", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
+      false -> %{dateTime: Timex.parse!("#{date} #{stop} #{hoursFromUTC}", "{YYYY}-{0M}-{D} {h24}:{m} {Z}") |> Timex.format!("{RFC3339}") }
     end
 
     # Post new event
