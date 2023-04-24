@@ -27,18 +27,15 @@ defmodule Cal.HTTPoisonMock do
   See https://developers.google.com/calendar/api/v3/reference/calendars.
   Obviously, don't invoke it from your App unless you want people to see fails.
   """
-  def get("https://www.googleapis.com/calendar/v3/calendars/primary") do
-    {:ok, %{
-      id: "someid",
-    }}
+  def get("https://www.googleapis.com/calendar/v3/calendars/primary", _headers) do
+    body = Jason.encode!(%{id: "someid"})
+    {:ok, %{ body: body}}
   end
 
   # get/1 that is used to mock fetching event lists.
-  def get(_url) do
-    {:ok,
-      %{
-        items: [
-          %{
+  def get(_url, _headers, params: _params) do
+    body = Jason.encode!(
+      %{ items: [ %{
             "created" => "2022-03-22T12:34:08.000Z",
             "creator" => %{"email" => "someemail@email.com", "self" => true},
             "end" => %{"date" => "2023-04-22"},
@@ -48,10 +45,10 @@ defmodule Cal.HTTPoisonMock do
             "start" => %{"date" => "2023-04-21"},
             "status" => "confirmed",
             "summary" => "Some title",
-          }
-        ],
-      }
-    }
+          }],}
+    )
+
+    {:ok, %{ body: body }}
   end
 
 
