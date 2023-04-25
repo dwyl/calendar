@@ -24,6 +24,19 @@ defmodule CalWeb.AppLiveTest do
   end
 
 
+  test "changing date and posting new event", %{conn: conn} do
+    conn = add_assigns_to_conn(conn)
+    {:ok, view, html} = live(conn, "/app")
+
+    # Should render the page
+    assert html =~ "List of events"
+
+    # Clicking on a date and creating should still show elements
+    assert render_click(view, "change-date", %{"year" => "2022", "month" => "3", "day" => "10", "hoursFromUTC" => "+0100"})
+    assert render_click(view, "create-event", %{"title" => "some title", "date" => "2021-01-01", "start" => "17:01", "stop" => "17:02", "all_day" => false, "hoursFromUTC" => "+0100"})
+    assert render_click(view, "create-event", %{"title" => "some title", "date" => "2021-01-01", "start" => "17:01", "stop" => "17:02", "all_day" => true, "hoursFromUTC" => "+0100"})
+  end
+
 
   defp add_assigns_to_conn(conn) do
 

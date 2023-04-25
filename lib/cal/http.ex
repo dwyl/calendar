@@ -45,7 +45,24 @@ defmodule Cal.HTTPoisonMock do
             "start" => %{"date" => "2023-04-21"},
             "status" => "confirmed",
             "summary" => "Some title",
-          }],}
+          },
+          %{
+            "created" => "2022-03-23T12:34:08.000Z",
+            "creator" => %{"email" => "someemail@email.com", "self" => true},
+            "end" => %{
+              "dateTime" => "2023-03-20T02:00:00Z",
+              "timeZone" => "Europe/Lisbon"
+            },
+            "id" => "cphjep9g6dgjasdasdghsa1234gsa4db16op38db36asd1sdfas1",
+            "organizer" => %{"email" => "someemail@email.com", "self" => true},
+            "originalStartTime" => %{"date" => "2023-04-21"},
+            "start" => %{
+              "dateTime" => "2023-03-20T01:00:00Z",
+              "timeZone" => "Europe/Lisbon"
+            },
+            "status" => "confirmed",
+            "summary" => "Some title",
+          }]}
     )
 
     {:ok, %{ body: body }}
@@ -55,7 +72,7 @@ defmodule Cal.HTTPoisonMock do
   @doc """
   post/2 will just return a mocked success.
   """
-  def post(_url, _body) do
+  def post(_url, _body, _headers) do
     {:ok, %{body: Jason.encode!(%{})}}
   end
 end

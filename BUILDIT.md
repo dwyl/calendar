@@ -1952,10 +1952,7 @@ the `mount/3` function in two!
   def connected_mount(_params, _session, socket) do
 
     # Getting information about the timezone of the client
-    hoursFromUTC = case get_connect_params(socket) do
-      nil -> "+0000"
-      params -> Map.get(params, "hoursFromUTC", "+0000")
-    end
+    hoursFromUTC = Map.get(get_connect_params(socket), "hoursFromUTC", "+0000")
 
     timezone = Timex.Timezone.name_of(hoursFromUTC)
 

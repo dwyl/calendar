@@ -14,10 +14,7 @@ defmodule CalWeb.AppLive do
   def connected_mount(_params, _session, socket) do
 
     # Getting information about the timezone of the client
-    hoursFromUTC = case get_connect_params(socket) do
-      nil -> "+0000"
-      params -> Map.get(params, "hoursFromUTC", "+0000")
-    end
+    hoursFromUTC = Map.get(get_connect_params(socket), "hoursFromUTC", "+0000")
 
     timezone = Timex.Timezone.name_of(hoursFromUTC)
 
@@ -119,7 +116,7 @@ defmodule CalWeb.AppLive do
 
     # Post new event
     body = Jason.encode!(%{summary: title, start: start, end: stop })
-    HTTPoison.post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
+    httpoison().post("https://www.googleapis.com/calendar/v3/calendars/#{primary_calendar.id}/events", body, headers)
   end
 
 
@@ -133,7 +130,6 @@ defmodule CalWeb.AppLive do
 
 
   # Parse JSON body response
-  defp parse_body_response({:error, err}), do: {:error, err}
   defp parse_body_response({:ok, response}) do
     body = Map.get(response, :body)
     # make keys of map atoms for easier access in templates
