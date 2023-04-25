@@ -2071,3 +2071,13 @@ you should see the following homepage.
 # The end!
 
 And you're done!
+Your final app should look like so.
+You are able to sign in, list your events
+for a given day and create events 
+for whatever day you want.
+You may add "all-day" events
+or set a start and stop for each one.
+
+<p align="center">
+    <img width="832" alt="final" src="https://user-images.githubusercontent.com/17494745/234142797-1dd78fbe-6383-4ed6-8292-e7b5a8631d60.gif">
+</p>
