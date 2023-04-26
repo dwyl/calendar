@@ -5,30 +5,37 @@ defmodule CalWeb.AppHTML do
   Renders the start and end times of the event within the event item list.
   """
   def render_start_end_times(event) do
-
     # Converting both start and end datetimes.
     # If no datetime is found, it's because the "start" is a date,
     # meaning the event is an "all-day" event.
     #
     # See https://developers.google.com/calendar/api/v3/reference/events#resource.
 
-    {start_type, start_datetime} = case Map.get(event, "start") |> Map.get("dateTime") do
-      nil ->
-        {:ok, date} = Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
-        {:date, date}
-      start_datetime ->
-        {:ok, datetime} = start_datetime |> Timex.parse("{RFC3339}")
-        {:datetime, datetime}
-    end
+    {start_type, start_datetime} =
+      case Map.get(event, "start") |> Map.get("dateTime") do
+        nil ->
+          {:ok, date} =
+            Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
 
-    {_end_type, end_datetime} = case Map.get(event, "end") |> Map.get("dateTime") do
-      nil ->
-        {:ok, date} = Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
-        {:date, date}
+          {:date, date}
+
+        start_datetime ->
+          {:ok, datetime} = start_datetime |> Timex.parse("{RFC3339}")
+          {:datetime, datetime}
+      end
+
+    {_end_type, end_datetime} =
+      case Map.get(event, "end") |> Map.get("dateTime") do
+        nil ->
+          {:ok, date} =
+            Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+
+          {:date, date}
+
         end_datetime ->
-        {:ok, datetime} = end_datetime |> Timex.parse("{RFC3339}")
-        {:datetime, datetime}
-    end
+          {:ok, datetime} = end_datetime |> Timex.parse("{RFC3339}")
+          {:datetime, datetime}
+      end
 
     # Return the string appropriately
     if(start_type == :date) do
@@ -45,10 +52,11 @@ defmodule CalWeb.AppHTML do
   Returns the datetime on the left side of the event item list.
   """
   def render_date(event) do
-    {:ok, start_datetime} = case Map.get(event, "start") |> Map.get("dateTime") do
-      nil -> Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
-      start_datetime -> start_datetime |> Timex.parse("{RFC3339}")
-    end
+    {:ok, start_datetime} =
+      case Map.get(event, "start") |> Map.get("dateTime") do
+        nil -> Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+        start_datetime -> start_datetime |> Timex.parse("{RFC3339}")
+      end
 
     %{
       year: start_datetime.year,
@@ -56,5 +64,4 @@ defmodule CalWeb.AppHTML do
       day: start_datetime.day
     }
   end
-
 end

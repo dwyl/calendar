@@ -4,7 +4,8 @@ defmodule Cal.HTTPoison do
   and mocks behaviour when testing.
   """
 
-  @httpoison (Application.compile_env(:elixir_auth_google, :httpoison_mock) && Cal.HTTPoisonMock) || HTTPoison
+  @httpoison (Application.compile_env(:elixir_auth_google, :httpoison_mock) && Cal.HTTPoisonMock) ||
+               HTTPoison
 
   @type conn :: map
 
@@ -29,13 +30,15 @@ defmodule Cal.HTTPoisonMock do
   """
   def get("https://www.googleapis.com/calendar/v3/calendars/primary", _headers) do
     body = Jason.encode!(%{id: "someid"})
-    {:ok, %{ body: body}}
+    {:ok, %{body: body}}
   end
 
   # get/1 that is used to mock fetching event lists.
   def get(_url, _headers, params: _params) do
-    body = Jason.encode!(
-      %{ items: [ %{
+    body =
+      Jason.encode!(%{
+        items: [
+          %{
             "created" => "2022-03-22T12:34:08.000Z",
             "creator" => %{"email" => "someemail@email.com", "self" => true},
             "end" => %{"date" => "2023-04-22"},
@@ -44,7 +47,7 @@ defmodule Cal.HTTPoisonMock do
             "originalStartTime" => %{"date" => "2023-04-21"},
             "start" => %{"date" => "2023-04-21"},
             "status" => "confirmed",
-            "summary" => "Some title",
+            "summary" => "Some title"
           },
           %{
             "created" => "2022-03-23T12:34:08.000Z",
@@ -61,13 +64,13 @@ defmodule Cal.HTTPoisonMock do
               "timeZone" => "Europe/Lisbon"
             },
             "status" => "confirmed",
-            "summary" => "Some title",
-          }]}
-    )
+            "summary" => "Some title"
+          }
+        ]
+      })
 
-    {:ok, %{ body: body }}
+    {:ok, %{body: body}}
   end
-
 
   @doc """
   post/2 will just return a mocked success.

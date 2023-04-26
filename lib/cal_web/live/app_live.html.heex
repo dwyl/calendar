@@ -1,42 +1,45 @@
 <div class="w-full p-4">
   <main role="main" class="flex w-full flex-col-reverse content-center justify-center md:flex-row">
-
     <!-- List of events -->
     <div class="flex flex-col md:w-1/2">
       <h2 class="text-5xl font-medium leading-tight text-slate-900">List of events</h2>
-      <h2 class="text-md leading-tight text-slate-600">Click on a date and the list of events will be updated automatically.</h2>
+      <h2 class="text-md leading-tight text-slate-600">
+        Click on a date and the list of events will be updated automatically.
+      </h2>
 
       <%= for event <- @event_list do %>
-      <div class="relative mt-4 block h-fit w-full overflow-hidden rounded-lg border border-gray-100">
-        <div class="flex flex-row">
-          <div class="flex w-14 flex-col items-center justify-center bg-red-700 py-2 pl-3 pr-3 text-white">
-            <h3 class="text-xs"><%= render_date(event).month %></h3>
-            <h3 class="text-2xl font-bold"><%= render_date(event).day %></h3>
-            <h3 class="text-xs"><%= render_date(event).year %></h3>
-          </div>
-
-          <div class="ml-5 pb-2 pr-2 pt-2">
-            <div class="sm:flex sm:justify-between sm:gap-4">
-              <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
-                <span class="mr-3"><%= Map.get(event, "summary") %></span>
-                <span class="rounded-full border border-indigo-500 px-3 py-1 text-xs text-indigo-500">
-                  <span class="font-bold"><%= render_start_end_times(event) %></span>
-                </span>
-              </h3>
+        <div class="relative mt-4 block h-fit w-full overflow-hidden rounded-lg border border-gray-100">
+          <div class="flex flex-row">
+            <div class="flex w-14 flex-col items-center justify-center bg-red-700 py-2 pl-3 pr-3 text-white">
+              <h3 class="text-xs"><%= render_date(event).month %></h3>
+              <h3 class="text-2xl font-bold"><%= render_date(event).day %></h3>
+              <h3 class="text-xs"><%= render_date(event).year %></h3>
             </div>
 
-            <div class="mt-1">
-              <p class="w-full text-sm text-gray-500">
-                <span>Organized by: </span>
-                <span class="font-bold"><%= Map.get(event, "organizer") |> Map.get("displayName") || Map.get(event, "organizer") |> Map.get("email") %></span>
-              </p>
+            <div class="ml-5 pb-2 pr-2 pt-2">
+              <div class="sm:flex sm:justify-between sm:gap-4">
+                <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
+                  <span class="mr-3"><%= Map.get(event, "summary") %></span>
+                  <span class="rounded-full border border-indigo-500 px-3 py-1 text-xs text-indigo-500">
+                    <span class="font-bold"><%= render_start_end_times(event) %></span>
+                  </span>
+                </h3>
+              </div>
+
+              <div class="mt-1">
+                <p class="w-full text-sm text-gray-500">
+                  <span>Organized by: </span>
+                  <span class="font-bold">
+                    <%= Map.get(event, "organizer") |> Map.get("displayName") ||
+                      Map.get(event, "organizer") |> Map.get("email") %>
+                  </span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       <% end %>
     </div>
-
     <!-- Calendar and form section -->
     <div class="flex justify-center px-4 py-2 md:w-1/2">
       <div x-data="app()" x-init="[initDate(), getNoOfDays()]">
@@ -49,36 +52,89 @@
                 <span x-text="year" class="ml-1 text-lg font-normal text-gray-600"></span>
               </div>
               <div class="rounded-lg border px-1" style="padding-top: 2px;">
-                <button type="button" class="inline-flex cursor-pointer items-center rounded-lg p-1 leading-none transition duration-100 ease-in-out hover:bg-gray-200" x-bind:class="{'cursor-not-allowed opacity-25': month == 0 }" x-bind:disabled="month == 0 ? true : false" @click="month--; getNoOfDays()">
-                  <svg class="inline-flex h-6 w-6 leading-none text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                <button
+                  type="button"
+                  class="inline-flex cursor-pointer items-center rounded-lg p-1 leading-none transition duration-100 ease-in-out hover:bg-gray-200"
+                  x-bind:class="{'cursor-not-allowed opacity-25': month == 0 }"
+                  x-bind:disabled="month == 0 ? true : false"
+                  @click="month--; getNoOfDays()"
+                >
+                  <svg
+                    class="inline-flex h-6 w-6 leading-none text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </button>
                 <div class="inline-flex h-6 border-r"></div>
-                <button type="button" class="inline-flex cursor-pointer items-center rounded-lg p-1 leading-none transition duration-100 ease-in-out hover:bg-gray-200" x-bind:class="{'cursor-not-allowed opacity-25': month == 11 }" x-bind:disabled="month == 11 ? true : false" @click="month++; getNoOfDays()">
-                  <svg class="inline-flex h-6 w-6 leading-none text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                <button
+                  type="button"
+                  class="inline-flex cursor-pointer items-center rounded-lg p-1 leading-none transition duration-100 ease-in-out hover:bg-gray-200"
+                  x-bind:class="{'cursor-not-allowed opacity-25': month == 11 }"
+                  x-bind:disabled="month == 11 ? true : false"
+                  @click="month++; getNoOfDays()"
+                >
+                  <svg
+                    class="inline-flex h-6 w-6 leading-none text-gray-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
 
             <div class="-mx-1 -mb-1">
-              <div class="flex flex-wrap" >
+              <div class="flex flex-wrap">
                 <template x-for="(day, index) in DAYS" x-bind:key="index">
                   <div style="width: 14.26%" class="px-2 py-2">
-                    <div x-text="day" class="text-center text-sm font-bold uppercase tracking-wide text-gray-600"></div>
+                    <div
+                      x-text="day"
+                      class="text-center text-sm font-bold uppercase tracking-wide text-gray-600"
+                    >
+                    </div>
                   </div>
                 </template>
               </div>
 
-              <div class="flex flex-wrap border-l border-t"  phx-hook="DateClick" id="calendar-days">
+              <div
+                class="flex flex-wrap border-l border-t"
+                phx-hook="DateClick"
+                id="calendar-days"
+              >
                 <template x-for="blankday in blankdays">
-                  <div style="width: 14.28%; height: 60px" class="border-b border-r px-4 pt-2 text-center"></div>
+                  <div
+                    style="width: 14.28%; height: 60px"
+                    class="border-b border-r px-4 pt-2 text-center"
+                  >
+                  </div>
                 </template>
                 <template x-for="(date, dateIndex) in no_of_days" x-bind:key="dateIndex">
-                  <div style="width: 14.28%; height:60px" class="relative border-b border-r px-4 pt-2">
-                    <div @click="onClickCalendarDay(date);" x-text="date" class="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-center leading-none transition duration-100 ease-in-out" x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"></div>
+                  <div
+                    style="width: 14.28%; height:60px"
+                    class="relative border-b border-r px-4 pt-2"
+                  >
+                    <div
+                      @click="onClickCalendarDay(date);"
+                      x-text="date"
+                      class="inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-center leading-none transition duration-100 ease-in-out"
+                      x-bind:class="{'bg-blue-500 text-white': isToday(date) == true, 'text-gray-700 hover:bg-blue-200': isToday(date) == false }"
+                    >
+                    </div>
                     <div style="height: 80px;" class="mt-1 overflow-y-auto">
                       <template x-for="event in events.filter(e => new Date(e.event_date).toDateString() ===  new Date(year, month, date).toDateString() )">
                         <div
@@ -91,7 +147,8 @@
                                                         'border-purple-200 text-purple-800 bg-purple-100': event.event_theme === 'purple'
                                                     }"
                         >
-                          <p x-text="event.event_title" class="truncate text-sm leading-tight"></p>
+                          <p x-text="event.event_title" class="truncate text-sm leading-tight">
+                          </p>
                         </div>
                       </template>
                     </div>
@@ -107,41 +164,77 @@
             <h2 class="mb-6 border-b pb-2 text-2xl font-bold text-gray-800">Add Event Details</h2>
 
             <div class="mb-4">
-              <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Event title</label>
-              <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_title" />
+              <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">
+                Event title
+              </label>
+              <input
+                class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none"
+                type="text"
+                x-model="event_title"
+              />
             </div>
 
             <div class="mb-4 flex flex-row justify-between">
-                <div>
-                    <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Start</label>
-                    <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_start" />
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">End</label>
-                    <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_stop" />
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="label cursor-pointer">
-                    <input type="checkbox" class="checkbox" x-model="event_all_day" />
-                    <label class="mb-1 text-sm font-bold tracking-wide text-gray-800">All day</label>
+              <div>
+                <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">
+                  Start
                 </label>
+                <input
+                  class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none"
+                  type="text"
+                  x-model="event_start"
+                />
+              </div>
+              <div>
+                <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">
+                  End
+                </label>
+                <input
+                  class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none"
+                  type="text"
+                  x-model="event_stop"
+                />
+              </div>
             </div>
 
             <div class="mb-4">
-              <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">Event date</label>
-              <input class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none" type="text" x-model="event_date" readonly />
+              <label class="label cursor-pointer">
+                <input type="checkbox" class="checkbox" x-model="event_all_day" />
+                <label class="mb-1 text-sm font-bold tracking-wide text-gray-800">All day</label>
+              </label>
+            </div>
+
+            <div class="mb-4">
+              <label class="mb-1 block text-sm font-bold tracking-wide text-gray-800">
+                Event date
+              </label>
+              <input
+                class="w-full appearance-none rounded-lg border-2 border-gray-200 bg-gray-200 px-4 py-2 leading-tight text-gray-700 focus:border-blue-500 focus:bg-white focus:outline-none"
+                type="text"
+                x-model="event_date"
+                readonly
+              />
             </div>
 
             <div class="mb-2">
-              <span x-show="!!show_error" class="mb-1 block text-sm font-bold tracking-wide text-red-800">Missing information or some of the fields are invalid.</span>
+              <span
+                x-show="!!show_error"
+                class="mb-1 block text-sm font-bold tracking-wide text-red-800"
+              >
+                Missing information or some of the fields are invalid.
+              </span>
             </div>
 
             <div class="mt-8 text-right">
               <div class="mt-8 text-right">
                 <div class="mt-8 text-right">
-                  <button type="button" class="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 font-semibold text-white shadow-sm hover:bg-gray-700" @click="addEvent()">Save Event</button>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 font-semibold text-white shadow-sm hover:bg-gray-700"
+                    @click="addEvent()"
+                  >
+                    Save Event
+                  </button>
                 </div>
               </div>
             </div>
