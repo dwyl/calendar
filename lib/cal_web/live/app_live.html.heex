@@ -103,7 +103,7 @@
         </div>
 
         <div class="container mt-2">
-          <div class="block w-full w-full overflow-hidden rounded-lg bg-white p-8 shadow">
+          <div class="block  w-full overflow-hidden rounded-lg bg-white p-8 shadow">
             <h2 class="mb-6 border-b pb-2 text-2xl font-bold text-gray-800">Add Event Details</h2>
 
             <div class="mb-4">
@@ -179,8 +179,8 @@
 
                     isToday(day) {
 
-                        const chosen_date = new Date(this.year, this.month, this.chosen_day);
-                        const d = new Date(this.year, this.month, day);
+                        const d = new Date();
+                        const chosen_date = new Date(this.year, this.month, day);
 
                         return chosen_date.toDateString() === d.toDateString() ? true : false;
                     },

@@ -34,7 +34,33 @@ of a team and display them in a single intuitive view.
 > as issues in this repo
  so we can evolve the requirements/solution collectively.
 
+If you're curious on how to build this, 
+please check our 
+[`BUILDIT.md`](./BUILDIT.md) file.
+
+
  ## Run the App
+
+ To run the app,
+ you will need to fulfil some prerequisites:
+ - have a project setup in [`Google Console`](https://console.cloud.google.com/welcome?project=dwyl-calendar).
+ - enable the `Calendar API`.
+ - have the `CLIENT_ID` and `CLIENT_SECRET` 
+in an `.env` file and export these as
+environment variables.
+This is so you can sign-in through Google.
+You may use `.env_example`'s structure,
+rename it to `.env`
+and then run `source .env` to setup
+these env variables.
+
+You can find more information on the
+[`2. Connecting to Google Calendar API`](./BUILDIT.md#2-connecting-to-google-calendar-api)
+section of the `BUILDIT.md` file.
+
+After cloning the project,
+all you need to do is run it,
+like so!
 
 ```sh
 git clone git@github.com:dwyl/calendar.git
@@ -45,7 +71,3 @@ mix s
 Now visit 
 [`localhost:4000`](http://localhost:4000) 
 in your web browser.
-
-If you're curious on how to build this, 
-please check our 
-[`BUILDIT.md`](./BUILDIT.md) file.

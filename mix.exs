@@ -92,7 +92,7 @@ defmodule Cal.MixProject do
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
       t: ["test"],
       c: ["coveralls.html"],
-      s: ["setup", "phx.server"]
+      s: ["phx.server"]
     ]
   end
 end

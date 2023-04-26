@@ -11,14 +11,15 @@ to build this SPIKE.
 We assume you have foundational knowledge
 with Elixir and Phoenix.
 If you don't, 
-we suggest you visit 
+we suggest visiting
 [`learn-phoenix-framework`](https://github.com/dwyl/learn-phoenix-framework)
 to learn more about Phoenix and Elixir.
 
 Therefore, 
 we are going to assume you have some experience
 working with `Phoenix`,
-and thus gloss over some implementation details.
+and thus gloss over some implementation details
+specific to the Phoenix framework.
 
 This tutorial works with `Phoenix 1.7` 
 and Elixir `1.14`.
@@ -105,7 +106,7 @@ onto the application -
 Follow the instructions 
 and you should be able to have Google authentication working on the application.
 
-Here are the changes you should have:
+Here are the changes you should have done:
 
 - created `GoogleAuthController` inside `lib/cal_web/controllers`.
 The 
@@ -160,7 +161,7 @@ inside `lib/cal_web/controllers/app_html`
 (`AppController` pertains to the application 
 the person will login into.
 It's located inside the `/app` URL).
-These files pertain to the view and controllers
+These files are related to the view and controllers
 of the **app** (located in `/app` URL) 
 where the person will see the calendar events.
 
@@ -368,13 +369,13 @@ the screen will ask you to proceed.
   <img width="832" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232550107-9bc0e160-fe34-46bd-80ab-7f77f81fa021.png">
 </p>
 
-And consent to the scopes we've define.
+And consent to the scopes we've defined.
 Make sure to tick all the boxes 
 or else we won't be able to fetch information
 from the `Google Calendar API`.
 
 <p align="center">
-  <img width="332" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/232550351-98a75394-534a-4b79-9b88-7a3373adc929.png">
+  <img width="332" alt="calendar-3" src="https://user-images.githubusercontent.com/17494745/234525227-180fffc5-0800-4a37-94e1-757f9e2e90b4.png">
 </p>
 
 After checking all the boxes 
@@ -979,7 +980,7 @@ Change it to the following:
         </div>
 
         <div class="container mt-2">
-          <div class="block w-full w-full overflow-hidden rounded-lg bg-white p-8 shadow">
+          <div class="block w-full overflow-hidden rounded-lg bg-white p-8 shadow">
             <h2 class="mb-6 border-b pb-2 text-2xl font-bold text-gray-800">Add Event Details</h2>
 
             <div class="mb-4">
@@ -1284,7 +1285,7 @@ We've changed `isToday()`
 to mark the blue dot in the calendar
 to the day the person has chosen.
 Finally, we are now pushing an event
-to the liveview to be handled
+to the LiveView to be handled
 within the `onClickCalendarDay(date)` function.
 
 If you want to see all the changes made,
@@ -1406,8 +1407,8 @@ function app() {
 
         isToday(day) {
 
-            const chosen_date = new Date(this.year, this.month, this.chosen_day);
-            const d = new Date(this.year, this.month, day);
+            const d = new Date();
+            const chosen_date = new Date(this.year, this.month, day);
 
             return chosen_date.toDateString() === d.toDateString() ? true : false;
         },
@@ -1583,7 +1584,7 @@ and refresh the events list!
 Simple, right?
 
 That should be it!
-We are not successfully *listing*
+We are not only successfully *listing*
 but also *creating* events using `Google API`!
 🎉🎉
 
