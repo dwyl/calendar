@@ -4,7 +4,7 @@
 
 This is a log 
 of the steps taken 
-to build this SPIKE.
+to build the `Calendar` demo.
 
 </div>
 
@@ -15,20 +15,20 @@ we suggest visiting
 [`learn-phoenix-framework`](https://github.com/dwyl/learn-phoenix-framework)
 to learn more about Phoenix and Elixir.
 
-Therefore, 
-we are going to assume you have some experience
+The rest of this doc 
+assumes you have some _basic_ experience
 working with `Phoenix`,
-and thus gloss over some implementation details
-specific to the Phoenix framework.
+and thus glosses over some implementation details
+specific to the `Phoenix` framework.
 
 This tutorial works with `Phoenix 1.7` 
 and Elixir `1.14`.
 Make sure you have these installed
-so you can follow this tutorial more precisely.
+so you can follow all the steps.
 
 - [Build it 👩‍💻](#build-it-)
-- [0. Creating sample `Phoenix` project](#0-creating-sample-phoenix-project)
-- [1. Adding `Google Auth` and basic flow in our app](#1-adding-google-auth-and-basic-flow-in-our-app)
+- [0. Create the `Phoenix` project](#0-create-the-phoenix-project)
+- [1. Adding `Google Auth` and basic flow in our Aspp](#1-adding-google-auth-and-basic-flow-in-our-aspp)
 - [2. Connecting to `Google Calendar API`](#2-connecting-to-google-calendar-api)
   - [2.1 Adding scopes when requesting token](#21-adding-scopes-when-requesting-token)
   - [2.2 Fetching information to test and maintaining token alive](#22-fetching-information-to-test-and-maintaining-token-alive)
@@ -47,10 +47,10 @@ so you can follow this tutorial more precisely.
 - [The end!](#the-end)
 
 
-# 0. Creating sample `Phoenix` project
+# 0. Create the `Phoenix` project
 
-Let's create our sample project.
-In your terminal, type:
+Create the `Phoenix` App 
+with the following command:
 
 ```sh
 mix phx.new cal --no-mailer --no-dashboard
@@ -59,21 +59,19 @@ mix phx.new cal --no-mailer --no-dashboard
 This will create a sample `Phoenix` project
 without e-mail services and dashboard.
 
-After creating this tutorial,
-please visit the 
+We are tracking coverage in this project
+please read the
 `13. What is not tested` section in
-https://github.com/dwyl/phoenix-chat-example#13-what-is-not-tested
-to add `coveralls` to our application.
+[dwyl/phoenix-chat-example#13-what-is-not-tested](https://github.com/dwyl/phoenix-chat-example#13-what-is-not-tested)
+to add `coveralls` to the dependencies.
 This will make it easier to test our application
 and see the coverage of our codebase.
 
-After doing the changes,
-your `mix.exs` file should look like so.
-
+After making the changes,
+your `mix.exs` file should be similar to this:
 [`mix.exs`](https://github.com/dwyl/calendar/blob/88bc9960b1513bba6963708e03d059445dfce684/mix.exs)
 
-> **Note**
->
+> **Note**: 
 > Make sure you have the `aliases` similar to our files.
 > With this, we can run commands like `mix c` 
 > that will make it much easier to see the test coverage,
@@ -81,8 +79,11 @@ your `mix.exs` file should look like so.
 
 After making these changes,
 if you run `mix s`,
-you'll have the app running on `localhost:4000`
-and it should look like so.
+you'll have the app running.
+Visiting 
+[`localhost:4000`](http://localhost:4000)
+in your web browser,
+you should see something similar to this:
 
 <p align="center">
     <img width="832" alt="start" src="https://user-images.githubusercontent.com/17494745/232125438-f75e23bb-fc0c-4028-806b-3c50fac67fd7.png">
@@ -93,7 +94,7 @@ Awesome! 🎉
 We're ready to go.
 
 
-# 1. Adding `Google Auth` and basic flow in our app
+# 1. Adding `Google Auth` and basic flow in our Aspp
 
 Now let's go over adding a way for the person
 to authenticate with `Google` in our app.
@@ -103,15 +104,16 @@ that will allow you to easily integrate Google authentication
 onto the application - 
 [`dwyl/elixir-auth-google`](https://github.com/dwyl/elixir-auth-google).
 
-Follow the instructions 
-and you should be able to have Google authentication working on the application.
+Follow the step-by-step instructions 
+and you should have Google authentication working
+in around 5 mins. 
 
 Here are the changes you should have done:
 
 - created `GoogleAuthController` inside `lib/cal_web/controllers`.
 The 
 [`lib/cal_web/router.ex`](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/router.ex#L21-L23)
-file should look like so.
+file should now include the following routes:
 
 ```elixir
   scope "/", CalWeb do
@@ -126,7 +128,7 @@ file should look like so.
 
 Your `GoogleAuthController`
 inside [`lib/cal_web/controllers/google_auth_controller.ex` ](https://github.com/dwyl/calendar/blob/baae5b735c05b29c937ad132c43ce0129638a44b/lib/cal_web/controllers/google_auth_controller.ex)
-should look like so:
+should look contain the following code:
 
 ```elixir
 defmodule CalWeb.GoogleAuthController do
@@ -2082,3 +2084,5 @@ or set a start and stop for each one.
 <p align="center">
     <img width="832" alt="final" src="https://user-images.githubusercontent.com/17494745/234142797-1dd78fbe-6383-4ed6-8292-e7b5a8631d60.gif">
 </p>
+
+[![HitCount](https://hits.dwyl.com/dwyl/calendar-buildit.svg)](https://hits.dwyl.com/dwyl/calendar)

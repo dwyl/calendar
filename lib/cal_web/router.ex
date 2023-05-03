@@ -22,9 +22,4 @@ defmodule CalWeb.Router do
 
     get "/auth/google/callback", GoogleAuthController, :index
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", CalWeb do
-  #   pipe_through :api
-  # end
 end

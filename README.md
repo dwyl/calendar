@@ -30,22 +30,39 @@ Team calendar sharing simplified.
 Using the Google Calendar API, get the availability of all members
 of a team and display them in a single intuitive view.
 
-> **Note**: Please *Ask* ***lots*** *of questions 
-> as issues in this repo
- so we can evolve the requirements/solution collectively.
+> **Note**: Please _Ask **lots**_ of questions 
+> as issues in this repo: 
+> [dwyl/calendar/issues](https://github.com/dwyl/calendar/issues)
+> <br />
+> so that we can evolve the requirements/solution collectively.
 
-If you're curious on how to build this, 
-please check our 
+For a step-by-step guide on how we built this, 
+please see 
 [`BUILDIT.md`](./BUILDIT.md) file.
 
 
  ## Run the App
 
- To run the app,
- you will need to fulfil some prerequisites:
- - have a project setup in [`Google Console`](https://console.cloud.google.com/welcome?project=dwyl-calendar).
- - enable the `Calendar API`.
- - have the `CLIENT_ID` and `CLIENT_SECRET` 
+ To run the app simply run these commands:
+
+```sh
+git clone git@github.com:dwyl/calendar.git
+cd calendar
+mix s
+```
+
+
+Now visit 
+[`localhost:4000`](http://localhost:4000) 
+in your web browser.
+
+## `Google API Keys`
+
+To access the `Google Calendar API` you will need:
+
+1. a project setup in [`Google Console`](https://console.cloud.google.com/welcome?project=dwyl-calendar).
+2. `Calendar API` enabled.
+3.  `CLIENT_ID` and `CLIENT_SECRET` 
 in an `.env` file and export these as
 environment variables.
 This is so you can sign-in through Google.
@@ -54,20 +71,7 @@ rename it to `.env`
 and then run `source .env` to setup
 these env variables.
 
-You can find more information on the
+You can find more detail in the
 [`2. Connecting to Google Calendar API`](./BUILDIT.md#2-connecting-to-google-calendar-api)
 section of the `BUILDIT.md` file.
 
-After cloning the project,
-all you need to do is run it,
-like so!
-
-```sh
-git clone git@github.com:dwyl/calendar.git
-cd calendar
-mix s
-```
-
-Now visit 
-[`localhost:4000`](http://localhost:4000) 
-in your web browser.
