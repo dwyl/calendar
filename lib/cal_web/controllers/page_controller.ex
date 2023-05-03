@@ -4,6 +4,7 @@ defmodule CalWeb.PageController do
   def home(conn, _params) do
     # The home page is often custom made,
     # so skip the default app layout.
-    render(conn, :home, layout: false)
+    oauth_google_url = ElixirAuthGoogle.generate_oauth_url(conn)
+    render(conn, :home, layout: false, oauth_google_url: oauth_google_url)
   end
 end

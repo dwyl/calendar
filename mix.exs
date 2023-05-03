@@ -56,6 +56,18 @@ defmodule Cal.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
 
+      # Google auth
+      {:elixir_auth_google, "~> 1.6.5"},
+
+      # HTTPoison
+      {:httpoison, "~> 2.0"},
+
+      # Datetime library
+      {:timex, "~> 3.0"},
+
+      # Storage
+      {:pockets, "~> 0.1.0"},
+
       # create docs on localhost by running "mix docs"
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       # Track test coverage: github.com/parroty/excoveralls
@@ -80,7 +92,7 @@ defmodule Cal.MixProject do
       "assets.deploy": ["tailwind default --minify", "esbuild default --minify", "phx.digest"],
       t: ["test"],
       c: ["coveralls.html"],
-      s: ["setup", "phx.server"]
+      s: ["phx.server"]
     ]
   end
 end

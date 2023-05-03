@@ -18,10 +18,8 @@ defmodule CalWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-  end
+    live "/app", AppLive
 
-  # Other scopes may use custom stacks.
-  # scope "/api", CalWeb do
-  #   pipe_through :api
-  # end
+    get "/auth/google/callback", GoogleAuthController, :index
+  end
 end

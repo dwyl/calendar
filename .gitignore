@@ -35,3 +35,5 @@ cal-*.tar
 npm-debug.log
 /assets/node_modules/
 
+.env
+cache_test.dets

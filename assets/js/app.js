@@ -22,8 +22,45 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 
+
+//  https://stackoverflow.com/questions/15687872/convert-timezone-offset-number-of-hours-to-timezone-offset-in-military-hours
+function convertOffset(gmt_offset) {
+    var time = gmt_offset.toString().split(".");
+    var hour = parseInt(time[0]);
+    var negative = hour < 0 ? true : false;
+    hour = Math.abs(hour) < 10 ? "0" + Math.abs(hour) : Math.abs(hour);
+    hour = negative ? "-" + hour : "+" + hour;
+    return time[1] ? hour+(time[1]*6).toString() : hour + "00";
+}
+
+const hoursFromUTC = convertOffset(-new Date().getTimezoneOffset()/60);
+
+
+const Hooks = {}
+Hooks.DateClick = {
+    mounted() {
+      window.dateClickHook = this
+    },
+    changeDate(year, month, day) {
+        this.pushEvent('change-date', {year, month, day, hoursFromUTC})
+    },
+    // Receives the `title` string, the `start` time and `end` time and a boolean `all_day` stating if it's all day or not
+    createEvent(title, date, start, stop, all_day) {
+        this.pushEvent('create-event', {title, date, start, stop, all_day, hoursFromUTC})
+    }
+}
+  
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, {
+    dom: {
+        onBeforeElUpdated(from, to){
+          if(from.__x){ window.Alpine.clone(from.__x, to) }
+        }
+    },
+    params: {_csrf_token: csrfToken, hoursFromUTC: hoursFromUTC},
+    hooks: Hooks
+})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})

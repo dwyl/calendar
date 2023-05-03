@@ -20,6 +20,9 @@ defmodule Cal.Application do
       # {Cal.Worker, arg}
     ]
 
+    # Creating DETS token table
+    # TokenTable.init()
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Cal.Supervisor]
