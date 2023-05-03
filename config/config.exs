@@ -56,4 +56,4 @@ import_config "#{config_env()}.exs"
 
 # Google auth variables
 config :elixir_auth_google,
-  google_scope: "profile email https://www.googleapis.com/auth/calendar.events"
+  google_scope: "profile email https://www.googleapis.com/auth/calendar"

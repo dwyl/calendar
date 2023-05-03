@@ -28,7 +28,7 @@ so you can follow all the steps.
 
 - [Build it 👩‍💻](#build-it-)
 - [0. Create the `Phoenix` project](#0-create-the-phoenix-project)
-- [1. Adding `Google Auth` and basic flow in our Aspp](#1-adding-google-auth-and-basic-flow-in-our-aspp)
+- [1. Adding `Google Auth` and basic flow in our App](#1-adding-google-auth-and-basic-flow-in-our-app)
 - [2. Connecting to `Google Calendar API`](#2-connecting-to-google-calendar-api)
   - [2.1 Adding scopes when requesting token](#21-adding-scopes-when-requesting-token)
   - [2.2 Fetching information to test and maintaining token alive](#22-fetching-information-to-test-and-maintaining-token-alive)
@@ -94,19 +94,24 @@ Awesome! 🎉
 We're ready to go.
 
 
-# 1. Adding `Google Auth` and basic flow in our Aspp
+# 1. Adding `Google Auth` and basic flow in our App
 
-Now let's go over adding a way for the person
+Now let's go over adding a way for the `person`
 to authenticate with `Google` in our app.
 
-Luckily, we've developed a package
-that will allow you to easily integrate Google authentication
-onto the application - 
+Luckily, there's a package
+that lets you easily integrate `Google Auth`
+into any `Elixir` app: 
 [`dwyl/elixir-auth-google`](https://github.com/dwyl/elixir-auth-google).
 
 Follow the step-by-step instructions 
-and you should have Google authentication working
+and you should have `Google Auth` working
 in around 5 mins. 
+Your `Google OAuth` > `Scopes` should include the 
+"https://www.googleapis.com/auth/calendar.events" scope:
+
+<img width="1418" alt="google-auth-calendar-permissions" src="https://user-images.githubusercontent.com/194400/236030958-16c6762b-e4c9-44af-a507-a4198ee8a4e7.png">
+
 
 Here are the changes you should have done:
 
@@ -249,10 +254,8 @@ We are going to be using the `token`
 to make requests to 
 the [`Google Calendar API`](https://developers.google.com/calendar/api/guides/overview).
 
-> **Note**
->
-> Don't worry.
-> For testing purposes, 
+> **Note**: Don't worry,
+> for testing purposes, 
 > the `Calendar API` is *free*.
 > You can get rate limited if you exceed a certain quota
 > of requests though.
