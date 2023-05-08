@@ -66,7 +66,7 @@ defmodule Cal.MixProject do
       {:timex, "~> 3.0"},
 
       # Storage
-      {:pockets, "~> 0.1.0"},
+      {:pockets, "~> 1.4.0"},
 
       # create docs on localhost by running "mix docs"
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
