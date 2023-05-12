@@ -175,7 +175,7 @@ defmodule CalWeb.AppLive do
 
   # Get token from the flash session
   defp get_token(socket) do
-    case Phoenix.Controller.get_flash(socket, :token) do
+    case Map.get(socket.assigns.flash, "token") do
       nil -> {:error, nil}
       token -> {:ok, token}
     end

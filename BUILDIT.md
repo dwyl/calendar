@@ -183,8 +183,10 @@ end
 ```
 
 Your `app_controller.ex` should look like so.
-Take note we use `get_flash/2` 
-to use the `token` object
+We fetch the `token` object
+from the `:flash` socket assigns 
+that is made available to us
+by using the `:fetch_flash` plug.
 we've fetched earlier on the callback
 during the login process.
 
@@ -194,7 +196,7 @@ defmodule CalWeb.AppController do
 
   def app(conn, _params) do
 
-    conn = case get_flash(conn, :token) do
+    conn = case  Map.get(socket.assigns.flash, "token") do
       nil -> conn
       token -> assign(conn, :token, token)
     end
@@ -455,7 +457,7 @@ as shown below.
 
 
   defp get_token(conn) do
-    case get_flash(conn, :token) do
+    case Map.get(socket.assigns.flash, "token") do
       nil -> {:error, nil}
       token -> {:ok, token}
     end
@@ -569,7 +571,7 @@ defmodule CalWeb.AppLive do
 
 
   defp get_token(socket) do
-    case Phoenix.Controller.get_flash(socket, :token) do
+    case Map.get(socket.assigns.flash, "token") do
       nil -> {:error, nil}
       token -> {:ok, token}
     end
@@ -1710,7 +1712,7 @@ defmodule CalWeb.AppLive do
 
   # Get token from the flash session
   defp get_token(socket) do
-    case Phoenix.Controller.get_flash(socket, :token) do
+    case Map.get(socket.assigns.flash, "token") do
       nil -> {:error, nil}
       token -> {:ok, token}
     end
