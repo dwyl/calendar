@@ -13,7 +13,7 @@ defmodule CalWeb.AppLiveTest do
 
     # Should render the page and one event
     assert html =~ "List of events"
-    assert html =~ "Some title"
+    assert html =~ "First Event"
   end
 
   test "no token should redirect to home", %{conn: conn} do

@@ -59,6 +59,8 @@ defmodule Cal.MixProject do
       # Google auth
       {:elixir_auth_google, "~> 1.6.5"},
 
+      {:gcal, "~> 1.0.2"},
+
       # HTTPoison
       {:httpoison, "~> 2.0"},
 
