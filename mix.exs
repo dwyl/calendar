@@ -56,10 +56,11 @@ defmodule Cal.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
 
-      # Google auth
+      # Google auth: github.com/dwyl/elixir-auth-google
       {:elixir_auth_google, "~> 1.6.5"},
 
-      {:gcal, "~> 1.0.2"},
+      # Google Calendar made easy! github.com/dwyl/gcal
+      {:gcal, "~> 1.0.3"},
 
       # HTTPoison
       {:httpoison, "~> 2.0"},
