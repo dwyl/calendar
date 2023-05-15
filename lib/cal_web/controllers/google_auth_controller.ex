@@ -8,6 +8,7 @@ defmodule CalWeb.GoogleAuthController do
     {:ok, token} = ElixirAuthGoogle.get_token(code, conn)
     # {:ok, profile} = ElixirAuthGoogle.get_user_profile(token.access_token)
     dbg(token)
+
     conn
     # |> put_flash(:person_email, profile.email)
     |> put_flash(:token, token)
