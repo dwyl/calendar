@@ -39,21 +39,21 @@ defmodule CalWeb.AppLiveTest do
            })
 
     assert render_click(view, "create-event", %{
-             "title" => "some title",
-             "date" => "2021-01-01",
-             "start" => "17:01",
-             "stop" => "17:02",
-             "all_day" => false,
-             "hoursFromUTC" => "+0100"
+             title: "some title",
+             date: "2021-01-01",
+             start: "17:01",
+             stop: "17:02",
+             all_day: false,
+             hoursFromUTC: "+0100"
            })
 
     assert render_click(view, "create-event", %{
-             "title" => "some title",
-             "date" => "2021-01-01",
-             "start" => "17:01",
-             "stop" => "17:02",
-             "all_day" => true,
-             "hoursFromUTC" => "+0100"
+             title: "some title",
+             date: "2021-01-01",
+             start: "17:01",
+             stop: "17:02",
+             all_day: true,
+             hoursFromUTC: "+0100"
            })
   end
 
