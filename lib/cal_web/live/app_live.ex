@@ -17,7 +17,6 @@ defmodule CalWeb.AppLive do
     # If none is found, we redirect the user to the home page.
     case get_access_token(socket) do
       {:ok, access_token} ->
-        dbg(Timex.now(timezone))
         {:ok, primary_calendar} = Gcal.get_calendar_details(access_token, "primary")
         # Get event list and update socket
         {:ok, event_list} = Gcal.get_event_list(access_token, Timex.now(timezone))
