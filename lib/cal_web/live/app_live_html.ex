@@ -12,10 +12,10 @@ defmodule CalWeb.AppHTML do
     # See https://developers.google.com/calendar/api/v3/reference/events#resource.
 
     {start_type, start_datetime} =
-      case Map.get(event, "start") |> Map.get("dateTime") do
+      case Map.get(event, :start) |> Map.get(:dateTime) do
         nil ->
           {:ok, date} =
-            Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+            Map.get(event, :start) |> Map.get(:date) |> Timex.parse("%Y-%m-%d", :strftime)
 
           {:date, date}
 
@@ -25,10 +25,10 @@ defmodule CalWeb.AppHTML do
       end
 
     {_end_type, end_datetime} =
-      case Map.get(event, "end") |> Map.get("dateTime") do
+      case Map.get(event, :end) |> Map.get(:dateTime) do
         nil ->
           {:ok, date} =
-            Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+            Map.get(event, :start) |> Map.get(:date) |> Timex.parse("%Y-%m-%d", :strftime)
 
           {:date, date}
 
@@ -53,8 +53,8 @@ defmodule CalWeb.AppHTML do
   """
   def render_date(event) do
     {:ok, start_datetime} =
-      case Map.get(event, "start") |> Map.get("dateTime") do
-        nil -> Map.get(event, "start") |> Map.get("date") |> Timex.parse("%Y-%m-%d", :strftime)
+      case Map.get(event, :start) |> Map.get(:dateTime) do
+        nil -> Map.get(event, :start) |> Map.get(:date) |> Timex.parse("%Y-%m-%d", :strftime)
         start_datetime -> start_datetime |> Timex.parse("{RFC3339}")
       end
 

@@ -1,6 +1,6 @@
-# fly.toml file generated for dwyl-calendar on 2023-04-14T12:34:13+01:00
+# fly.toml file generated for gcal on 2023-05-15T14:53:32+01:00
 
-app = "dwyl-calendar"
+app = "gcal"
 kill_signal = "SIGTERM"
 kill_timeout = 5
 processes = []
@@ -9,7 +9,7 @@ processes = []
   release_command = "/app/bin/migrate"
 
 [env]
-  PHX_HOST = "dwyl-calendar.fly.dev"
+  PHX_HOST = "gcal.fly.dev"
   PORT = "8080"
 
 [experimental]

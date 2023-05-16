@@ -3,6 +3,6 @@ defmodule CalWeb.PageControllerTest do
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")
-    assert html_response(conn, 200) =~ "DWYL Calendar"
+    assert html_response(conn, 200) =~ "Calendar"
   end
 end

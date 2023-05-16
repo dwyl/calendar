@@ -19,7 +19,7 @@
             <div class="ml-5 pb-2 pr-2 pt-2">
               <div class="sm:flex sm:justify-between sm:gap-4">
                 <h3 class="text-lg font-bold text-gray-900 sm:text-xl">
-                  <span class="mr-3"><%= Map.get(event, "summary") %></span>
+                  <span class="mr-3"><%= Map.get(event, :summary) %></span>
                   <span class="rounded-full border border-indigo-500 px-3 py-1 text-xs text-indigo-500">
                     <span class="font-bold"><%= render_start_end_times(event) %></span>
                   </span>
@@ -30,8 +30,8 @@
                 <p class="w-full text-sm text-gray-500">
                   <span>Organized by: </span>
                   <span class="font-bold">
-                    <%= Map.get(event, "organizer") |> Map.get("displayName") ||
-                      Map.get(event, "organizer") |> Map.get("email") %>
+                    <%= Map.get(event, :organizer) |> Map.get(:displayName) ||
+                      Map.get(event, :organizer) |> Map.get(:email) %>
                   </span>
                 </p>
               </div>
