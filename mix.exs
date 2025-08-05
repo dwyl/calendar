@@ -74,7 +74,8 @@ defmodule Cal.MixProject do
       # create docs on localhost by running "mix docs"
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       # Track test coverage: github.com/parroty/excoveralls
-      {:excoveralls, "~> 0.15", only: [:test, :dev]}
+      {:excoveralls, "~> 0.15", only: [:test, :dev]},
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 
