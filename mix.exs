@@ -46,7 +46,7 @@ defmodule Cal.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 1.0.0"},
+      {:phoenix_live_view, "~> 1.1.2"},
       {:floki, ">= 0.30.0", only: :test},
       {:esbuild, "~> 0.7", runtime: Mix.env() == :dev},
       {:tailwind, "~> 0.3.1", runtime: Mix.env() == :dev},
@@ -74,7 +74,8 @@ defmodule Cal.MixProject do
       # create docs on localhost by running "mix docs"
       {:ex_doc, "~> 0.29", only: :dev, runtime: false},
       # Track test coverage: github.com/parroty/excoveralls
-      {:excoveralls, "~> 0.15", only: [:test, :dev]}
+      {:excoveralls, "~> 0.15", only: [:test, :dev]},
+      {:lazy_html, ">= 0.1.0", only: :test}
     ]
   end
 
